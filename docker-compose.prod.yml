@@ -1,0 +1,50 @@
+services:
+  nopcommerce:
+    image: ghcr.io/astrobod427/nopcommerce:latest
+    container_name: nopcommerce
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__ConnectionString: "Host=postgres;Port=5432;Database=nopcommerce;Username=nopcommerce;Password=${POSTGRES_PASSWORD}"
+    volumes:
+      - nopcommerce_appdata:/app/App_Data
+      - nopcommerce_plugins:/app/Plugins
+      - nopcommerce_wwwroot:/app/wwwroot
+    depends_on:
+      - postgres
+    networks:
+      - traefik-net
+      - nopcommerce-internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=portainer-stack_traefik-net"
+      - "traefik.http.routers.nopcommerce.rule=Host(`VOTRE_DOMAINE.COM`)"
+      - "traefik.http.routers.nopcommerce.entrypoints=websecure"
+      - "traefik.http.routers.nopcommerce.tls.certresolver=letsencrypt"
+      - "traefik.http.services.nopcommerce.loadbalancer.server.port=80"
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: nopcommerce-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nopcommerce
+      POSTGRES_USER: nopcommerce
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nopcommerce-internal
+
+networks:
+  traefik-net:
+    external: true
+    name: portainer-stack_traefik-net
+  nopcommerce-internal:
+    driver: bridge
+
+volumes:
+  nopcommerce_appdata:
+  nopcommerce_plugins:
+  nopcommerce_wwwroot:
+  postgres_data:
