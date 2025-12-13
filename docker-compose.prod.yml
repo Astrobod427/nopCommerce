@@ -18,7 +18,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=portainer-stack_traefik-net"
-      - "traefik.http.routers.nopcommerce.rule=Host(`VOTRE_DOMAINE.COM`)"
+      - "traefik.http.routers.nopcommerce.rule=Host(`nopcommerce.petitnuage.cloud`)"
       - "traefik.http.routers.nopcommerce.entrypoints=websecure"
       - "traefik.http.routers.nopcommerce.tls.certresolver=letsencrypt"
       - "traefik.http.services.nopcommerce.loadbalancer.server.port=80"

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-nopCommerce is an open-source ASP.NET Core e-commerce platform. This fork is configured for deployment on Hostinger VPS with Traefik reverse proxy.
+nopCommerce is an open-source ASP.NET Core e-commerce platform running on .NET 9. This fork is configured for deployment on Hostinger VPS with Traefik reverse proxy and PostgreSQL.
 
 ## Build and Run Commands
 
@@ -16,19 +16,38 @@ dotnet build src/NopCommerce.sln -c Debug
 # Run locally
 dotnet run --project src/Presentation/Nop.Web/Nop.Web.csproj
 
+# Run tests (NUnit with FluentAssertions and Moq)
+dotnet test src/Tests/Nop.Tests/Nop.Tests.csproj
+
+# Run a single test
+dotnet test src/Tests/Nop.Tests/Nop.Tests.csproj --filter "FullyQualifiedName~TestClassName.TestMethodName"
+
 # Docker build
 docker build -t nopcommerce .
 
-# Docker development (with PostgreSQL)
+# Docker development (with hot reload)
 docker compose -f docker-compose.nopcommerce.yml up --build
 ```
 
 ## Architecture
 
-- **src/Libraries/** - Core business logic and services
-- **src/Plugins/** - Plugin modules (payments, shipping, etc.)
-- **src/Presentation/Nop.Web/** - Main web application
-- **src/Tests/** - Unit tests
+### Core Libraries (src/Libraries/)
+- **Nop.Core** - Domain entities, caching, events, infrastructure (NopEngine, ITypeFinder), Autofac DI
+- **Nop.Data** - Data access layer with IRepository<T>, supports PostgreSQL/MySQL/MSSQL via FluentMigrator
+- **Nop.Services** - Business logic services for all domains (catalog, orders, customers, etc.)
+
+### Presentation Layer (src/Presentation/)
+- **Nop.Web** - Main MVC application with Areas/Admin for admin panel
+- **Nop.Web.Framework** - Shared MVC infrastructure, startup classes (INopStartup implementations)
+
+### Plugin System (src/Plugins/)
+Plugins implement specific interfaces and are loaded dynamically. Categories: Payments, Shipping, Tax, Widgets, ExternalAuth, Misc.
+
+### Key Patterns
+- **INopStartup**: Service registration at startup (ordered by priority)
+- **IStartupTask**: One-time initialization tasks run on app start
+- **IOrderedMapperProfile**: AutoMapper profiles for entity-to-model mapping
+- **IRepository<T>**: Generic repository pattern for data access
 
 ## Release Workflow
 

@@ -1,0 +1,41 @@
+# --- 1. Définition du réseau partagé (Externe) ---
+networks:
+  dev_services_network:
+    external: true
+
+services:
+    nopcommerce_web:
+        build:
+            context: .
+            dockerfile: Dockerfile.Dev
+        container_name: nopcommerce_dev
+
+        ports:
+            - "5010:8080"
+
+        environment:
+            ASPNETCORE_ENVIRONMENT: Development
+            # CORRECTION : Hôte = 'postgres-server' (le nom du service de la DB)
+            ConnectionStrings__NopCommerceConnection: Host=postgres-server;Port=5432;Username=devuser;Password=devpassword;Database=nopcommerce-data
+
+            # Résolution de l'erreur /.dotnet
+            DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+            DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+
+        volumes:
+            - .:/app
+            - ~/.nuget/packages:/root/.nuget/packages:ro
+            - /app/src/Presentation/Nop.Web/bin
+            - /app/src/Presentation/Nop.Web/obj
+            - /root/.dotnet
+
+        command: >
+            watch
+            --project src/Presentation/Nop.Web/Nop.Web.csproj
+            run
+            --urls http://0.0.0.0:8080
+            --no-launch-profile
+
+        # 💥 CORRECTION : Rattachement explicite du service au réseau partagé
+        networks:
+          - dev_services_network
