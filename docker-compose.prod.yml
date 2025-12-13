@@ -3,15 +3,18 @@ services:
     image: ghcr.io/astrobod427/nopcommerce:latest
     container_name: nopcommerce
     restart: unless-stopped
+    entrypoint: ["/opt/entrypoint.sh"]
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__ConnectionString: "Host=postgres;Port=5432;Database=nopcommerce;Username=nopcommerce;Password=${POSTGRES_PASSWORD}"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - nopcommerce_appdata:/app/App_Data
       - nopcommerce_plugins:/app/Plugins
       - nopcommerce_wwwroot:/app/wwwroot
+      - /opt/docker/nopcommerce/entrypoint.sh:/opt/entrypoint.sh:ro
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - traefik-net
       - nopcommerce-internal
@@ -33,8 +36,14 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - /opt/docker/nopcommerce/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - nopcommerce-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nopcommerce -d nopcommerce"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 networks:
   traefik-net:

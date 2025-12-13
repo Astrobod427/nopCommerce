@@ -75,7 +75,43 @@ Images are published to GitHub Container Registry:
 
 ## Production Deployment (VPS Hostinger KVM4)
 
-### 1. Configurer le registry ghcr.io dans Portainer
+### 1. Prérequis sur le VPS
+
+Créer les fichiers de configuration sur le VPS **avant** de déployer le stack :
+
+```bash
+# Créer le répertoire
+mkdir -p /opt/docker/nopcommerce
+
+# Script d'init PostgreSQL (extension citext requise par nopCommerce)
+cat > /opt/docker/nopcommerce/init.sql << 'EOF'
+-- Active l'extension citext pour la base de données NopCommerce
+\c nopcommerce
+CREATE EXTENSION IF NOT EXISTS citext;
+EOF
+
+# Script entrypoint (génère dataSettings.json au démarrage)
+cat > /opt/docker/nopcommerce/entrypoint.sh << 'EOF'
+#!/bin/sh
+set -e
+
+cat > /app/App_Data/dataSettings.json << SETTINGS
+{
+  "DataProvider": "postgresql",
+  "ConnectionString": "Host=postgres;Port=5432;Database=nopcommerce;Username=nopcommerce;Password=${POSTGRES_PASSWORD}",
+  "SQLCommandTimeout": null,
+  "RawDataSettings": {}
+}
+SETTINGS
+
+echo "dataSettings.json generated successfully"
+exec dotnet Nop.Web.dll
+EOF
+
+chmod +x /opt/docker/nopcommerce/entrypoint.sh
+```
+
+### 2. Configurer le registry ghcr.io dans Portainer
 
 1. Portainer → **Settings** → **Registries** → **Add registry**
 2. Sélectionner **Custom registry**
@@ -85,15 +121,14 @@ Images are published to GitHub Container Registry:
    - Username: `astrobod427`
    - Password: votre GitHub PAT (scope `read:packages`)
 
-### 2. Déployer le stack via Portainer
+### 3. Déployer le stack via Portainer
 
 1. Portainer → **Stacks** → **Add stack**
 2. Name: `nopcommerce`
 3. Coller le contenu de `docker-compose.prod.yml`
 4. Ajouter la variable d'environnement :
    - `POSTGRES_PASSWORD` = (mot de passe sécurisé)
-5. **Remplacer `VOTRE_DOMAINE.COM`** par votre domaine réel
-6. **Deploy the stack**
+5. **Deploy the stack**
 
 ### Mise à jour en production
 
@@ -109,8 +144,11 @@ Dans Portainer → **Stacks** → `nopcommerce` → **Editor** → **Update the 
 ### Configuration DNS requise
 
 Pointer vers l'IP du VPS :
-- `votredomaine.com` → A record → 72.62.60.240
-- `www.votredomaine.com` → CNAME → votredomaine.com
+- `nopcommerce.petitnuage.cloud` → A record → 72.62.60.240
+
+### URL de production
+
+- Site: `https://nopcommerce.petitnuage.cloud`
 
 ### Important: Label Traefik réseau
 
