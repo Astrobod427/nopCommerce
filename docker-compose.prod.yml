@@ -8,9 +8,10 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - nopcommerce_appdata:/app/App_Data
-      - nopcommerce_plugins:/app/Plugins
-      - nopcommerce_wwwroot:/app/wwwroot
+      # Bind mounts directs - plus fiables que les volumes nommés
+      - /opt/docker/nopcommerce/appdata:/app/App_Data
+      - /opt/docker/nopcommerce/plugins:/app/Plugins
+      - /opt/docker/nopcommerce/wwwroot:/app/wwwroot
       - /opt/docker/nopcommerce/entrypoint.sh:/opt/entrypoint.sh:ro
     depends_on:
       postgres:
@@ -35,7 +36,7 @@ services:
       POSTGRES_USER: nopcommerce
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - /opt/docker/nopcommerce/postgres_data:/var/lib/postgresql/data
       - /opt/docker/nopcommerce/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - nopcommerce-internal
@@ -51,9 +52,3 @@ networks:
     name: portainer-stack_traefik-net
   nopcommerce-internal:
     driver: bridge
-
-volumes:
-  nopcommerce_appdata:
-  nopcommerce_plugins:
-  nopcommerce_wwwroot:
-  postgres_data:
