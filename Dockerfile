@@ -1,5 +1,5 @@
 # create the build instance 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim AS build
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
@@ -33,16 +33,14 @@ RUN chmod 775 App_Data \
 			  wwwroot/sitemaps
 
 # create the runtime instance 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime 
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim AS runtime 
 
 # add globalization support
-RUN apk add --no-cache icu-libs icu-data-full
+RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/*
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
 # installs required packages
-RUN apk add tiff --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/main/ --allow-untrusted
-RUN apk add libgdiplus --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
-RUN apk add libc-dev tzdata gcompat --no-cache
+RUN apt-get update && apt-get install -y libtiff5 libgdiplus libc6-dev tzdata && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
