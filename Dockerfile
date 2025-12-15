@@ -40,7 +40,7 @@ RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/*
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
 # installs required packages
-RUN apt-get update && apt-get install -y libtiff5 libgdiplus libc6-dev tzdata && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libtiff6 libgdiplus libc6-dev tzdata && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
