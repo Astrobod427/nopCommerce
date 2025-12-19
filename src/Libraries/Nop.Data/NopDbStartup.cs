@@ -10,7 +10,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nop.Core.Configuration;
 using Nop.Core.Infrastructure;
-using Nop.Data.Configuration;
 using Nop.Data.DataProviders.Fluentmigrator;
 using Nop.Data.Extensions;
 using Nop.Data.Migrations;
@@ -42,14 +41,7 @@ public partial class NopDbStartup : INopStartup
             .AddScoped<IGeneratorAccessor, NopGeneratorAccessor>()
             .AddScoped<IProcessorAccessor, NopProcessorAccessor>()
             // set accessor for the connection string
-            .AddScoped<IConnectionStringAccessor>(x =>
-            {
-                if (DataSettingsManager.IsDatabaseInstalled())
-                    return DataSettingsManager.LoadSettings();
-
-                //we use a dummy connection string during installation
-                return new DataConfig { ConnectionString = string.Empty };
-            })
+            .AddScoped<IConnectionStringAccessor>(x => DataSettingsManager.LoadSettings())
             .AddScoped<IMigrationManager, MigrationManager>()
             .AddScoped<IConventionSet, NopConventionSet>()
             .ConfigureRunner(rb =>
