@@ -52,7 +52,7 @@ public partial class NopDbStartup : INopStartup
                     .SetCommandTimeout());
 
         services.AddScoped<IMySqlTypeMap>(_ => new NopMySql5TypeMap());
-        services.AddTransient(p => new Lazy<IVersionLoader>(p.GetRequiredService<IVersionLoader>()));
+        services.AddTransient(p => new Lazy<IVersionLoader>(() => p.GetRequiredService<IVersionLoader>()));
 
         //data layer
         services.AddTransient<IDataProviderManager, DataProviderManager>();
