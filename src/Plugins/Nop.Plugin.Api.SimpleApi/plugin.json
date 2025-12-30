@@ -1,0 +1,11 @@
+{
+  "Group": "Api",
+  "FriendlyName": "Simple Backend API",
+  "SystemName": "Nop.Plugin.Api.SimpleApi",
+  "Version": "1.00",
+  "SupportedVersions": [ "5.00" ],
+  "Author": "Gemini",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Api.SimpleApi.dll",
+  "Description": "A simple backend API to expose basic store data."
+}
