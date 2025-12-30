@@ -16,7 +16,7 @@ RUN dotnet publish Nop.Web.csproj -c Release -o /app/published
 
 # Explicitly publish the SimpleApi plugin
 WORKDIR /src/Plugins/Nop.Plugin.Api.SimpleApi
-RUN dotnet publish Nop.Plugin.Api.SimpleApi.csproj -c Release -o /app/published/Plugins/Api.SimpleApi
+RUN dotnet publish Nop.Plugin.Api.SimpleApi.csproj -c Release -o /app/published/Plugins/Nop.Plugin.Api.SimpleApi
 
 WORKDIR /app/published
 
