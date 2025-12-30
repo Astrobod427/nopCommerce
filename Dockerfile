@@ -14,9 +14,9 @@ RUN dotnet build NopCommerce.sln --no-incremental -c Release
 WORKDIR /src/Presentation/Nop.Web   
 RUN dotnet publish Nop.Web.csproj -c Release -o /app/published
 
-# Explicitly copy the SimpleApi plugin after publish because it's not a direct dependency
-RUN mkdir -p /app/published/Plugins && \
-    cp -r /src/Presentation/Nop.Web/Plugins/Api.SimpleApi /app/published/Plugins/
+# Explicitly publish the SimpleApi plugin
+WORKDIR /src/Plugins/Nop.Plugin.Api.SimpleApi
+RUN dotnet publish Nop.Plugin.Api.SimpleApi.csproj -c Release -o /app/published/Plugins/Api.SimpleApi
 
 WORKDIR /app/published
 
