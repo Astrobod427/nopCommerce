@@ -1,0 +1,41 @@
+name: nop_commerce_app
+description: A new Flutter project for nopCommerce using SimpleApi.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State management & Utility
+  provider: ^6.1.1
+  shared_preferences: ^2.2.2
+  
+  # Networking
+  http: ^1.2.0
+  dio: ^5.4.0
+  
+  # UI & Design
+  google_fonts: ^6.1.0
+  cached_network_image: ^3.3.1
+  flutter_staggered_grid_view: ^0.7.0
+  shimmer: ^3.0.0
+  carousel_slider: ^5.1.1
+  
+  # HTML Rendering for product descriptions
+  flutter_html: ^3.0.0-beta.2
+  flutter_dotenv: ^6.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - .env

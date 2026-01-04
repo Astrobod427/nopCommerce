@@ -60,6 +60,26 @@ namespace Nop.Plugin.Api.SimpleApi.Controllers
             return Ok(customerDto);
         }
 
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        {
+            var result = await _customerRegistrationService.ValidateCustomerAsync(loginDto.Email, loginDto.Password);
+            if (result == Nop.Core.Domain.Customers.CustomerLoginResults.Successful)
+            {
+                var customer = await _customerService.GetCustomerByEmailAsync(loginDto.Email);
+                return Ok(new CustomerDto 
+                { 
+                    Id = customer.Id, 
+                    Email = customer.Email,
+                    Username = customer.Username,
+                    FirstName = customer.FirstName,
+                    LastName = customer.LastName,
+                    Active = customer.Active
+                });
+            }
+            return Unauthorized(new { Message = "Invalid credentials", Result = result.ToString() });
+        }
+
         [HttpPost("")]
         public async Task<IActionResult> CreateCustomer([FromBody] CustomerCreateDto customerDto)
         {

@@ -14,24 +14,39 @@ namespace Nop.Plugin.Api.SimpleApi.Controllers
     public class CategoriesController : BasePluginController
     {
         private readonly ICategoryService _categoryService;
+        private readonly Nop.Services.Media.IPictureService _pictureService;
 
-        public CategoriesController(ICategoryService categoryService)
+        public CategoriesController(ICategoryService categoryService, Nop.Services.Media.IPictureService pictureService)
         {
             _categoryService = categoryService;
+            _pictureService = pictureService;
         }
 
         [HttpGet("")]
         public async Task<IActionResult> GetCategories()
         {
             var categories = await _categoryService.GetAllCategoriesAsync();
-            var categoryDtos = categories.Select(c => new CategoryDto
+            var categoryDtos = new System.Collections.Generic.List<CategoryDto>();
+
+            foreach (var c in categories)
             {
-                Id = c.Id,
-                Name = c.Name,
-                Description = c.Description,
-                Published = c.Published,
-                DisplayOrder = c.DisplayOrder
-            }).ToList();
+                var picture = await _pictureService.GetPictureByIdAsync(c.PictureId);
+                string imageUrl = null;
+                if (picture != null)
+                {
+                    (imageUrl, _) = await _pictureService.GetPictureUrlAsync(picture);
+                }
+
+                categoryDtos.Add(new CategoryDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Description = c.Description,
+                    Published = c.Published,
+                    DisplayOrder = c.DisplayOrder,
+                    ImageUrl = imageUrl
+                });
+            }
 
             return Ok(categoryDtos);
         }
@@ -45,13 +60,21 @@ namespace Nop.Plugin.Api.SimpleApi.Controllers
                 return NotFound();
             }
 
+            var picture = await _pictureService.GetPictureByIdAsync(category.PictureId);
+            string imageUrl = null;
+            if (picture != null)
+            {
+                (imageUrl, _) = await _pictureService.GetPictureUrlAsync(picture);
+            }
+
             var categoryDto = new CategoryDto
             {
                 Id = category.Id,
                 Name = category.Name,
                 Description = category.Description,
                 Published = category.Published,
-                DisplayOrder = category.DisplayOrder
+                DisplayOrder = category.DisplayOrder,
+                ImageUrl = imageUrl
             };
 
             return Ok(categoryDto);

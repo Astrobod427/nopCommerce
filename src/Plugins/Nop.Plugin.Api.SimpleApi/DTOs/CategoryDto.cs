@@ -7,5 +7,6 @@ namespace Nop.Plugin.Api.SimpleApi.DTOs
         public string Description { get; set; }
         public bool Published { get; set; }
         public int DisplayOrder { get; set; }
+        public string ImageUrl { get; set; }
     }
 }

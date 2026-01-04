@@ -28,6 +28,52 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="card card-default">
+                    <div class="card-header">
+                        API Documentation
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <h5><i class="icon fas fa-info"></i> Authentication</h5>
+                            All API requests must include the following header:<br />
+                            <code>X-API-KEY: @(string.IsNullOrEmpty(Model.ApiKey) ? "YOUR_API_KEY" : Model.ApiKey)</code>
+                        </div>
+
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Endpoint</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-primary"><td colspan="3"><strong>Products</strong></td></tr>
+                                <tr><td><span class="badge badge-success">GET</span></td><td><code>/api/simple/products</code></td><td>List all products</td></tr>
+                                <tr><td><span class="badge badge-success">GET</span></td><td><code>/api/simple/products/{id}</code></td><td>Get product details</td></tr>
+                                <tr><td><span class="badge badge-warning">POST</span></td><td><code>/api/simple/products</code></td><td>Create a new product</td></tr>
+                                <tr><td><span class="badge badge-info">PUT</span></td><td><code>/api/simple/products/{id}</code></td><td>Update a product</td></tr>
+                                <tr><td><span class="badge badge-danger">DELETE</span></td><td><code>/api/simple/products/{id}</code></td><td>Delete a product</td></tr>
+
+                                <tr class="table-primary"><td colspan="3"><strong>Categories</strong></td></tr>
+                                <tr><td><span class="badge badge-success">GET</span></td><td><code>/api/simple/categories</code></td><td>List all categories</td></tr>
+                                <tr><td><span class="badge badge-success">GET</span></td><td><code>/api/simple/categories/{id}</code></td><td>Get category details</td></tr>
+                                <tr><td><span class="badge badge-warning">POST</span></td><td><code>/api/simple/categories</code></td><td>Create a new category</td></tr>
+                                <tr><td><span class="badge badge-info">PUT</span></td><td><code>/api/simple/categories/{id}</code></td><td>Update a category</td></tr>
+                                <tr><td><span class="badge badge-danger">DELETE</span></td><td><code>/api/simple/categories/{id}</code></td><td>Delete a category</td></tr>
+
+                                <tr class="table-primary"><td colspan="3"><strong>Customers</strong></td></tr>
+                                <tr><td><span class="badge badge-success">GET</span></td><td><code>/api/simple/customers</code></td><td>List customers</td></tr>
+                                <tr><td><span class="badge badge-success">GET</span></td><td><code>/api/simple/customers/{id}</code></td><td>Get customer details</td></tr>
+
+                                <tr class="table-primary"><td colspan="3"><strong>Orders</strong></td></tr>
+                                <tr><td><span class="badge badge-success">GET</span></td><td><code>/api/simple/orders</code></td><td>List orders</td></tr>
+                                <tr><td><span class="badge badge-success">GET</span></td><td><code>/api/simple/orders/{id}</code></td><td>Get order details</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

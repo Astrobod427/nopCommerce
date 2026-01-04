@@ -1,15 +1,7 @@
 # Utilise l'image SDK complète pour pouvoir exécuter 'dotnet watch run'
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS dev
-
-# --- Ajout des dépendances manquantes pour Alpine ---
-# NopCommerce utilise des librairies de traitement d'images et de globalisation
-RUN apk add --no-cache icu-libs icu-data-full libc-dev tzdata gcompat
-
-# Installation des paquets graphiques nécessaires pour NopCommerce (comme dans votre Dockerfile original)
-RUN apk add tiff --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/main/ --allow-untrusted
-RUN apk add libgdiplus --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
-
+FROM mcr.microsoft.com/dotnet/sdk:9.0
 WORKDIR /app
+
 
 RUN echo '#!/bin/sh\nfind /app -type d \\( -name "bin" -o -name "obj" \\) -exec rm -rf {} + 2>/dev/null || true' > /clean.sh && chmod +x /clean.sh
 
