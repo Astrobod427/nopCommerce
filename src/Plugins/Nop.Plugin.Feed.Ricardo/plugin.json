@@ -1,0 +1,11 @@
+{
+  "Group": "Feed",
+  "FriendlyName": "Ricardo.ch Connector",
+  "SystemName": "Feed.Ricardo",
+  "Version": "1.00",
+  "SupportedVersions": [ "5.00" ],
+  "Author": "Gemini",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Feed.Ricardo.dll",
+  "Description": "Allows syncing products to Ricardo.ch marketplace."
+}

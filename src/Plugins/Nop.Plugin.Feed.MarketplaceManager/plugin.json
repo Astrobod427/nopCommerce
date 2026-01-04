@@ -1,0 +1,11 @@
+{
+  "Group": "Feed",
+  "FriendlyName": "Marketplace Manager Core",
+  "SystemName": "Feed.MarketplaceManager",
+  "Version": "1.00",
+  "SupportedVersions": [ "5.00" ],
+  "Author": "Gemini",
+  "DisplayOrder": 0,
+  "FileName": "Nop.Plugin.Feed.MarketplaceManager.dll",
+  "Description": "Core plugin to manage marketplace synchronizations (Amazon, eBay, Ricardo...)."
+}

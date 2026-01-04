@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Language>
+  <LocaleResource Name="Plugins.Feed.Ricardo.ClientId">
+    <Value>Client ID</Value>
+  </LocaleResource>
+  <LocaleResource Name="Plugins.Feed.Ricardo.ClientSecret">
+    <Value>Client Secret</Value>
+  </LocaleResource>
+  <LocaleResource Name="Plugins.Feed.Ricardo.UseSandbox">
+    <Value>Use Sandbox Environment</Value>
+  </LocaleResource>
+  <LocaleResource Name="Plugins.Feed.Ricardo.AutoSyncOnCreate">
+    <Value>Auto-sync new products</Value>
+  </LocaleResource>
+</Language>

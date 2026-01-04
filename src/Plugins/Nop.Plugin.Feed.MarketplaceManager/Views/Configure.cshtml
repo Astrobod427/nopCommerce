@@ -1,0 +1,42 @@
+@model Nop.Plugin.Feed.MarketplaceManager.Models.ConfigurationModel
+
+@{
+    Layout = "_ConfigurePlugin";
+}
+
+<div class="cards-group">
+    <div class="card card-default">
+        <div class="card-header">
+            <div class="card-title">
+                Marketplace Manager Dashboard
+            </div>
+        </div>
+        <div class="card-body">
+            <p>The following marketplace providers are installed and active:</p>
+            @if (Model.ActiveProviders.Any())
+            {
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Friendly Name</th>
+                            <th>System Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var provider in Model.ActiveProviders)
+                        {
+                            <tr>
+                                <td>@provider.FriendlyName</td>
+                                <td>@provider.SystemName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="alert alert-info">No active marketplace providers found.</div>
+            }
+        </div>
+    </div>
+</div>
