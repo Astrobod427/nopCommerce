@@ -7,5 +7,6 @@
   "Author": "Gemini",
   "DisplayOrder": 1,
   "FileName": "Nop.Plugin.Feed.Ricardo.dll",
-  "Description": "Allows syncing products to Ricardo.ch marketplace."
+  "Description": "Allows syncing products to Ricardo.ch marketplace.",
+  "DependsOnSystemNames": [ "Feed.MarketplaceManager" ]
 }
