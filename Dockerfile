@@ -7,8 +7,8 @@ ARG BUILDPLATFORM
 WORKDIR /src                                                                    
 COPY ./src ./
 
-# build solution   
-RUN dotnet build NopCommerce.sln --no-incremental -c Release
+# build project
+RUN dotnet build Presentation/Nop.Web/Nop.Web.csproj -c Release
 
 # publish project
 WORKDIR /src/Presentation/Nop.Web   
@@ -20,7 +20,7 @@ RUN dotnet publish Nop.Plugin.Api.SimpleApi.csproj -c Release -o /app/published/
 
 WORKDIR /app/published
 
-RUN echo '#!/bin/sh\nfind /app -type d \\( -name "bin" -o -name "obj" \\) -exec rm -rf {} + 2>/dev/null || true' > /clean.sh && chmod +x /clean.sh
+RUN echo '#!/bin/sh\nfind /app -type d \( -name "bin" -o -name "obj" \) -exec rm -rf {} + 2>/dev/null || true' > /clean.sh && chmod +x /clean.sh
 
 RUN mkdir logs bin
 
