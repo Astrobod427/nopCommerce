@@ -83,6 +83,9 @@ namespace Nop.Plugin.Api.SimpleApi.Controllers
         [HttpPost("")]
         public async Task<IActionResult> CreateCustomer([FromBody] CustomerCreateDto customerDto)
         {
+            // Log for debugging
+            // _logger.Information($"Registering new customer: {customerDto.Email}");
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
