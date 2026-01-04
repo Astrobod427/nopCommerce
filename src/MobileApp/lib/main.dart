@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'src/config/theme.dart';
 import 'src/screens/home_screen.dart';
+import 'src/services/api_service.dart';
 import 'src/services/cart_provider.dart';
 import 'src/services/auth_service.dart';
 import 'src/services/theme_provider.dart';
@@ -10,6 +11,7 @@ import 'src/services/language_provider.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
+  await ApiService.loadBaseUrl();
   runApp(const NopCommerceApp());
 }
 

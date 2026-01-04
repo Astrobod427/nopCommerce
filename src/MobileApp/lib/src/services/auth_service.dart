@@ -60,14 +60,43 @@ class AuthService extends ChangeNotifier {
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       // Auto-login after registration or handle based on API response
-      // If the API returns the created user, we can set it.
-      // Based on controller: CreatedAtAction(..., new { id = customer.Id }, customer.Id);
-      // It returns the ID in body (or location). 
-      // To be safe and consistent, we can just call login immediately or rely on the user to login.
-      // BUT, let's try to auto-login for better UX.
       await login(email, password);
     } else {
       throw Exception('Registration failed: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  Future<void> changePassword(String oldPassword, String newPassword) async {
+    if (_currentUser == null) return;
+    
+    final response = await http.post(
+      Uri.parse('$baseUrl/customers/password'),
+      headers: _headers,
+      body: jsonEncode({
+        'CustomerId': _currentUser!.id,
+        'OldPassword': oldPassword,
+        'NewPassword': newPassword,
+      }),
+    );
+
+    if (response.statusCode != 204 && response.statusCode != 200) {
+      throw Exception('Failed to change password: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  Future<void> deleteAccount() async {
+    if (_currentUser == null) return;
+
+    final response = await http.delete(
+      Uri.parse('$baseUrl/customers/${_currentUser!.id}'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 204 || response.statusCode == 200) {
+      _currentUser = null;
+      notifyListeners();
+    } else {
+      throw Exception('Failed to delete account: ${response.statusCode} - ${response.body}');
     }
   }
 

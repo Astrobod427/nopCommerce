@@ -1,3 +1,38 @@
+class Order {
+  final int id;
+  final String orderGuid;
+  final int customerId;
+  final int orderStatusId;
+  final int paymentStatusId;
+  final int shippingStatusId;
+  final double orderTotal;
+  final DateTime createdOnUtc;
+
+  Order({
+    required this.id,
+    required this.orderGuid,
+    required this.customerId,
+    required this.orderStatusId,
+    required this.paymentStatusId,
+    required this.shippingStatusId,
+    required this.orderTotal,
+    required this.createdOnUtc,
+  });
+
+  factory Order.fromJson(Map<String, dynamic> json) {
+    return Order(
+      id: json['Id'],
+      orderGuid: json['OrderGuid'],
+      customerId: json['CustomerId'],
+      orderStatusId: json['OrderStatusId'],
+      paymentStatusId: json['PaymentStatusId'],
+      shippingStatusId: json['ShippingStatusId'],
+      orderTotal: (json['OrderTotal'] as num).toDouble(),
+      createdOnUtc: DateTime.parse(json['CreatedOnUtc']),
+    );
+  }
+}
+
 class OrderRequest {
   final int customerId;
   final List<OrderItemRequest> items;

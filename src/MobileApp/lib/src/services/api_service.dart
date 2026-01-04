@@ -1,14 +1,18 @@
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/product.dart';
 import '../models/category.dart';
 import '../models/language.dart';
 import '../models/order.dart';
+import '../models/currency.dart';
 
 class ApiService {
-  // URL loaded from .env
-  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://localhost:5010/api/simple';
+  static const String _storageKey = 'api_base_url';
+  
+  // URL loaded from .env initially, but can be updated
+  static String baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:5010/api/simple';
   
   // API Key loaded from .env
   static String get apiKey => dotenv.env['API_KEY'] ?? '';
@@ -18,6 +22,25 @@ class ApiService {
   final http.Client client;
 
   ApiService({http.Client? client}) : client = client ?? http.Client();
+
+  static Future<void> loadBaseUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedUrl = prefs.getString(_storageKey);
+    if (storedUrl != null && storedUrl.isNotEmpty) {
+      baseUrl = storedUrl;
+    }
+  }
+
+  static Future<void> setBaseUrl(String url) async {
+    if (url.isEmpty) return;
+    // Remove trailing slash if present
+    if (url.endsWith('/')) {
+      url = url.substring(0, url.length - 1);
+    }
+    baseUrl = url;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_storageKey, url);
+  }
 
   Map<String, String> get _headers => {
     'Content-Type': 'application/json',
@@ -93,6 +116,34 @@ class ApiService {
       return data.map((json) => Language.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load languages: ${response.statusCode}');
+    }
+  }
+
+  Future<List<Currency>> getCurrencies() async {
+    final response = await client.get(
+      Uri.parse('$baseUrl/currencies'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Currency.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load currencies: ${response.statusCode}');
+    }
+  }
+
+  Future<List<Order>> getOrders(int customerId) async {
+    final response = await client.get(
+      Uri.parse('$baseUrl/orders?customerId=$customerId'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Order.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load orders: ${response.statusCode}');
     }
   }
 
