@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/product.dart';
 import '../models/category.dart';
 import '../models/language.dart';
+import '../models/order.dart';
 
 class ApiService {
   // URL loaded from .env
@@ -22,6 +23,18 @@ class ApiService {
     'Content-Type': 'application/json',
     'X-API-KEY': apiKey,
   };
+
+  Future<void> createOrder(OrderRequest orderRequest) async {
+    final response = await client.post(
+      Uri.parse('$baseUrl/orders/create'),
+      headers: _headers,
+      body: jsonEncode(orderRequest.toJson()),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to create order: ${response.statusCode} - ${response.body}');
+    }
+  }
 
   Future<List<Product>> getProducts({int? categoryId}) async {
     String queryParams = '?languageId=$languageId';
