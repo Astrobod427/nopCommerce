@@ -4,6 +4,10 @@ using Nop.Core;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.SimpleApi.Controllers;
 using Nop.Plugin.Api.SimpleApi.DTOs;
+using Nop.Services.Catalog;
+using Nop.Services.Common;
+using Nop.Services.Customers;
+using Nop.Services.Directory;
 using Nop.Services.Orders;
 using System;
 using System.Collections.Generic;
@@ -15,13 +19,44 @@ namespace Nop.Plugin.Api.SimpleApi.Tests;
 public class OrdersControllerTests
 {
     private Mock<IOrderService> _orderServiceMock;
+    private Mock<ICustomerService> _customerServiceMock;
+    private Mock<IShoppingCartService> _shoppingCartServiceMock;
+    private Mock<IProductService> _productServiceMock;
+    private Mock<IAddressService> _addressServiceMock;
+    private Mock<IWorkContext> _workContextMock;
+    private Mock<IStoreContext> _storeContextMock;
+    private Mock<IGenericAttributeService> _genericAttributeServiceMock;
+    private Mock<IOrderProcessingService> _orderProcessingServiceMock;
+    private Mock<ICountryService> _countryServiceMock;
+    
     private OrdersController _ordersController;
 
     [SetUp]
     public void Setup()
     {
         _orderServiceMock = new Mock<IOrderService>();
-        _ordersController = new OrdersController(_orderServiceMock.Object);
+        _customerServiceMock = new Mock<ICustomerService>();
+        _shoppingCartServiceMock = new Mock<IShoppingCartService>();
+        _productServiceMock = new Mock<IProductService>();
+        _addressServiceMock = new Mock<IAddressService>();
+        _workContextMock = new Mock<IWorkContext>();
+        _storeContextMock = new Mock<IStoreContext>();
+        _genericAttributeServiceMock = new Mock<IGenericAttributeService>();
+        _orderProcessingServiceMock = new Mock<IOrderProcessingService>();
+        _countryServiceMock = new Mock<ICountryService>();
+
+        _ordersController = new OrdersController(
+            _orderServiceMock.Object,
+            _customerServiceMock.Object,
+            _shoppingCartServiceMock.Object,
+            _productServiceMock.Object,
+            _addressServiceMock.Object,
+            _workContextMock.Object,
+            _storeContextMock.Object,
+            _genericAttributeServiceMock.Object,
+            _orderProcessingServiceMock.Object,
+            _countryServiceMock.Object
+        );
     }
 
     [TearDown]
