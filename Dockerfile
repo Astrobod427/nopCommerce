@@ -18,14 +18,6 @@ RUN dotnet publish Nop.Web.csproj -c Release -o /app/published
 WORKDIR /src/Plugins/Nop.Plugin.Api.SimpleApi
 RUN dotnet publish Nop.Plugin.Api.SimpleApi.csproj -c Release -o /app/published/Plugins/Nop.Plugin.Api.SimpleApi
 
-# Explicitly publish the MarketplaceManager plugin
-WORKDIR /src/Plugins/Nop.Plugin.Feed.MarketplaceManager
-RUN dotnet publish Nop.Plugin.Feed.MarketplaceManager.csproj -c Release -o /app/published/Plugins/Nop.Plugin.Feed.MarketplaceManager
-
-# Explicitly publish the Ricardo plugin
-WORKDIR /src/Plugins/Nop.Plugin.Feed.Ricardo
-RUN dotnet publish Nop.Plugin.Feed.Ricardo.csproj -c Release -o /app/published/Plugins/Nop.Plugin.Feed.Ricardo
-
 WORKDIR /app/published
 
 RUN echo '#!/bin/sh\nfind /app -type d \( -name "bin" -o -name "obj" \) -exec rm -rf {} + 2>/dev/null || true' > /clean.sh && chmod +x /clean.sh
