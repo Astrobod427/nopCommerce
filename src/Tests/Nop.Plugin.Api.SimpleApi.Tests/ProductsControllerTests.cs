@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Nop.Core;
 using Nop.Core.Domain.Catalog;
+using Nop.Core.Domain.Media;
 using Nop.Plugin.Api.SimpleApi.Controllers;
 using Nop.Plugin.Api.SimpleApi.DTOs;
 using Nop.Services.Catalog;
+using Nop.Services.Media;
 
 namespace Nop.Plugin.Api.SimpleApi.Tests;
 
@@ -12,13 +15,21 @@ namespace Nop.Plugin.Api.SimpleApi.Tests;
 public class ProductsControllerTests
 {
     private Mock<IProductService> _productServiceMock;
+    private Mock<IPictureService> _pictureServiceMock;
+    private Mock<ILogger<ProductsController>> _loggerMock;
     private ProductsController _productsController;
 
     [SetUp]
     public void Setup()
     {
         _productServiceMock = new Mock<IProductService>();
-        _productsController = new ProductsController(_productServiceMock.Object);
+        _pictureServiceMock = new Mock<IPictureService>();
+        _loggerMock = new Mock<ILogger<ProductsController>>();
+        
+        _productsController = new ProductsController(
+            _productServiceMock.Object, 
+            _pictureServiceMock.Object, 
+            _loggerMock.Object);
     }
 
     [TearDown]
@@ -62,6 +73,9 @@ public class ProductsControllerTests
             It.IsAny<bool>(),
             It.IsAny<bool?>()
         )).ReturnsAsync(products);
+
+        _pictureServiceMock.Setup(x => x.GetPicturesByProductIdAsync(It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync(new List<Picture>());
 
         // Act
         var result = await _productsController.GetProducts();
