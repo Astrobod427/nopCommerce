@@ -9,7 +9,8 @@ namespace Nop.Plugin.Api.SimpleApi.Controllers
 {
     [Route("api/simple/theme")]
     [ApiController]
-    public class ThemeController : BasePluginController
+    [IgnoreAntiforgeryToken]
+    public class ThemeController : Nop.Web.Framework.Controllers.BasePluginController
     {
         private readonly ISettingService _settingService;
         private readonly IPictureService _pictureService;

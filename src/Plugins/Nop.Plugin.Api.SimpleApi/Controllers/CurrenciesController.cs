@@ -10,6 +10,7 @@ namespace Nop.Plugin.Api.SimpleApi.Controllers
 {
     [Route("api/simple/currencies")]
     [ApiController]
+    [IgnoreAntiforgeryToken]
     public class CurrenciesController : BasePluginController
     {
         private readonly ICurrencyService _currencyService;

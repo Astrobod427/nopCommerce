@@ -19,6 +19,7 @@ namespace Nop.Plugin.Api.SimpleApi.Controllers
 {
     [Route("api/simple/orders")]
     [ApiController]
+    [IgnoreAntiforgeryToken]
     public class OrdersController : Nop.Web.Framework.Controllers.BasePluginController
     {
         private readonly IOrderService _orderService;

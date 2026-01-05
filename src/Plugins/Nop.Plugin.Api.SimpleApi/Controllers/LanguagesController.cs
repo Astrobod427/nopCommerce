@@ -8,6 +8,7 @@ namespace Nop.Plugin.Api.SimpleApi.Controllers
 {
     [Route("api/simple/languages")]
     [ApiController]
+    [IgnoreAntiforgeryToken]
     public class LanguagesController : Nop.Web.Framework.Controllers.BasePluginController
     {
         private readonly ILanguageService _languageService;

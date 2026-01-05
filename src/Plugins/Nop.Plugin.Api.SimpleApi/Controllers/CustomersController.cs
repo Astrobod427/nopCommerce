@@ -10,6 +10,7 @@ namespace Nop.Plugin.Api.SimpleApi.Controllers
 {
     [Route("api/simple/customers")]
     [ApiController]
+    [IgnoreAntiforgeryToken]
     public class CustomersController : Nop.Web.Framework.Controllers.BasePluginController
     {
         private readonly ICustomerService _customerService;

@@ -11,6 +11,7 @@ namespace Nop.Plugin.Api.SimpleApi.Controllers
 {
     [Route("api/simple/categories")]
     [ApiController]
+    [IgnoreAntiforgeryToken]
     public class CategoriesController : BasePluginController
     {
         private readonly ICategoryService _categoryService;

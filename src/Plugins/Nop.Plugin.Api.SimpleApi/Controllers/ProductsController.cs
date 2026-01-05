@@ -14,6 +14,7 @@ namespace Nop.Plugin.Api.SimpleApi.Controllers
 {
     [Route("api/simple/products")]
     [ApiController]
+    [IgnoreAntiforgeryToken]
     public class ProductsController : BasePluginController
     {
         private readonly IProductService _productService;
@@ -32,17 +33,22 @@ namespace Nop.Plugin.Api.SimpleApi.Controllers
         [HttpGet("")]
         public async Task<IActionResult> GetProducts([FromQuery] int categoryId = 0, [FromQuery] int languageId = 0)
         {
-            _logger.LogInformation("SimpleAPI: GetProducts called with categoryId={categoryId}, languageId={languageId}", categoryId, languageId);
+            _logger.LogInformation($"SimpleAPI: GetProducts called with categoryId={categoryId}, languageId={languageId}");
             
             var categoryIds = categoryId > 0 ? new List<int> { categoryId } : null;
             
+            // Debugging category filter
             if (categoryIds != null)
             {
-                _logger.LogInformation("SimpleAPI: Filtering by categoryIds: {categoryIds}", string.Join(",", categoryIds));
+                 _logger.LogInformation($"SimpleAPI: Filtering by categoryIds count: {categoryIds.Count} - First ID: {categoryIds[0]}");
+            }
+            else
+            {
+                 _logger.LogInformation("SimpleAPI: No category filter applied.");
             }
 
             var products = await _productService.SearchProductsAsync(categoryIds: categoryIds, languageId: languageId);
-            _logger.LogInformation("SimpleAPI: SearchProductsAsync returned {count} products", products.Count);
+            _logger.LogInformation($"SimpleAPI: SearchProductsAsync returned {products.Count} products");
 
             var productDtos = new List<ProductDto>();
 
