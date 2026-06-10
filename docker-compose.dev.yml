@@ -24,7 +24,7 @@ services:
 
         volumes:
             - .:/app
-            - ~/.nuget/packages:/root/.nuget/packages:ro
+            - ~/.nuget/packages:/root/.nuget/packages
             - /app/src/Presentation/Nop.Web/bin
             - /app/src/Presentation/Nop.Web/obj
             - /root/.dotnet
