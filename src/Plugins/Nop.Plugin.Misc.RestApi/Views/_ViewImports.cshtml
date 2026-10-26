@@ -3,11 +3,15 @@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @addTagHelper *, Nop.Web.Framework
 
+@inject INopHtmlHelper NopHtml
+
 @using Microsoft.AspNetCore.Mvc.ViewFeatures
 @using Microsoft.AspNetCore.Routing
 @using Nop.Core
 @using Nop.Plugin.Misc.RestApi
 @using Nop.Plugin.Misc.RestApi.Models
 @using Nop.Web.Framework
+@using Nop.Web.Framework.Infrastructure
+@using Nop.Web.Framework.Models
 @using Nop.Web.Framework.Extensions
 @using Nop.Web.Framework.UI
