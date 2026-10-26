@@ -1,0 +1,9 @@
+@{
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    string Active(params string[] actions) => actions.Contains(action, StringComparer.OrdinalIgnoreCase) ? "active" : string.Empty;
+}
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><a class="nav-link @Active("Configure")" asp-controller="RestApiAdmin" asp-action="Configure">@T("Plugins.Misc.RestApi.Tabs.Settings")</a></li>
+    <li class="nav-item"><a class="nav-link @Active("Clients", "CreateClient", "EditClient", "RegenerateSecret")" asp-controller="RestApiAdmin" asp-action="Clients">@T("Plugins.Misc.RestApi.Tabs.Clients")</a></li>
+    <li class="nav-item"><a class="nav-link @Active("Sessions")" asp-controller="RestApiAdmin" asp-action="Sessions">@T("Plugins.Misc.RestApi.Tabs.Sessions")</a></li>
+</ul>

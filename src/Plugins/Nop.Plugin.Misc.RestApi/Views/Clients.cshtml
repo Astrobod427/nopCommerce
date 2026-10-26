@@ -1,0 +1,66 @@
+@model ApiClientListModel
+
+@{
+    Layout = "_AdminLayout";
+    ViewBag.PageTitle = T("Plugins.Misc.RestApi.Clients").Text;
+    NopHtml.SetActiveMenuItemSystemName(RestApiDefaults.AdminMenuSystemName);
+}
+
+<div class="content-header clearfix">
+    <h1 class="float-left">@T("Plugins.Misc.RestApi.Clients")</h1>
+    <div class="float-right">
+        <a asp-action="CreateClient" class="btn btn-primary">
+            <i class="fas fa-square-plus"></i>
+            @T("Admin.Common.AddNew")
+        </a>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <partial name="~/Plugins/Misc.RestApi/Views/_Tabs.cshtml" />
+        <div class="card card-default">
+            <div class="card-body">
+                <p>@T("Plugins.Misc.RestApi.Clients.Hint")</p>
+                @if (!Model.Clients.Any())
+                {
+                    <p class="text-muted">@T("Plugins.Misc.RestApi.Clients.None")</p>
+                }
+                else
+                {
+                    <table class="table table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                <th>@T("Plugins.Misc.RestApi.Clients.Fields.Name")</th>
+                                <th>@T("Plugins.Misc.RestApi.Clients.Fields.CustomerEmail")</th>
+                                <th>@T("Plugins.Misc.RestApi.Clients.Fields.Active")</th>
+                                <th>@T("Plugins.Misc.RestApi.Clients.Fields.ActiveSessions")</th>
+                                <th>@T("Plugins.Misc.RestApi.Clients.Fields.LastUsedOn")</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var client in Model.Clients)
+                            {
+                                <tr>
+                                    <td>@client.Name<br /><small class="text-muted"><code>@client.ClientId</code></small></td>
+                                    <td>
+                                        @client.CustomerEmail
+                                        @if (!client.CustomerHasPermission)
+                                        {
+                                            <br /><span class="badge bg-warning">@T("Plugins.Misc.RestApi.Clients.MissingPermission")</span>
+                                        }
+                                    </td>
+                                    <td>@(client.Active ? T("Admin.Common.Yes") : T("Admin.Common.No"))</td>
+                                    <td>@client.ActiveSessions</td>
+                                    <td>@client.LastUsedOn</td>
+                                    <td><a asp-action="EditClient" asp-route-id="@client.Id" class="btn btn-default"><i class="fas fa-pencil"></i> @T("Admin.Common.Edit")</a></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</section>

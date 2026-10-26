@@ -1,0 +1,77 @@
+@model ConfigurationModel
+
+@{
+    Layout = "_AdminLayout";
+    ViewBag.PageTitle = T("Plugins.Misc.RestApi.Menu").Text;
+    NopHtml.SetActiveMenuItemSystemName(RestApiDefaults.AdminMenuSystemName);
+}
+
+<form asp-controller="RestApiAdmin" asp-action="Configure" method="post">
+    <div class="content-header clearfix">
+        <h1 class="float-left">@T("Plugins.Misc.RestApi.Menu")</h1>
+        <div class="float-right">
+            <button type="submit" name="save" class="btn btn-primary">
+                <i class="far fa-floppy-disk"></i>
+                @T("Admin.Common.Save")
+            </button>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <partial name="~/Plugins/Misc.RestApi/Views/_Tabs.cshtml" />
+            <div asp-validation-summary="All"></div>
+            <div class="cards-group">
+                <div class="card card-default">
+                    <div class="card-header">@T("Plugins.Misc.RestApi.Settings.Api")</div>
+                    <div class="card-body">
+                        <p>@T("Plugins.Misc.RestApi.Settings.Api.Hint") <code>@Model.ApiBaseUrl</code></p>
+                        <div class="form-group row">
+                            <div class="col-md-3"><nop-label asp-for="StorefrontEnabled" /></div>
+                            <div class="col-md-9">
+                                <nop-editor asp-for="StorefrontEnabled" />
+                                <span class="text-muted">@string.Format(T("Plugins.Misc.RestApi.Settings.ActiveSessions").Text, Model.ActiveStorefrontSessions)</span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3"><nop-label asp-for="StorefrontTokenLifetimeDays" /></div>
+                            <div class="col-md-9"><nop-editor asp-for="StorefrontTokenLifetimeDays" /></div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3"><nop-label asp-for="BackOfficeEnabled" /></div>
+                            <div class="col-md-9">
+                                <nop-editor asp-for="BackOfficeEnabled" />
+                                <span class="text-muted">@string.Format(T("Plugins.Misc.RestApi.Settings.ActiveSessions").Text, Model.ActiveBackOfficeSessions)</span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3"><nop-label asp-for="BackOfficeTokenLifetimeMinutes" /></div>
+                            <div class="col-md-9"><nop-editor asp-for="BackOfficeTokenLifetimeMinutes" /></div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3"><nop-label asp-for="MaxPageSize" /></div>
+                            <div class="col-md-9"><nop-editor asp-for="MaxPageSize" /></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-default">
+                    <div class="card-header">@T("Plugins.Misc.RestApi.Settings.MobileApp")</div>
+                    <div class="card-body">
+                        <div class="form-group row">
+                            <div class="col-md-3"><nop-label asp-for="AppPrimaryColor" /></div>
+                            <div class="col-md-9"><input asp-for="AppPrimaryColor" type="color" class="form-control" style="max-width: 6rem" /></div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3"><nop-label asp-for="AppSecondaryColor" /></div>
+                            <div class="col-md-9"><input asp-for="AppSecondaryColor" type="color" class="form-control" style="max-width: 6rem" /></div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3"><nop-label asp-for="AppLogoPictureId" /></div>
+                            <div class="col-md-9"><nop-editor asp-for="AppLogoPictureId" /></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</form>

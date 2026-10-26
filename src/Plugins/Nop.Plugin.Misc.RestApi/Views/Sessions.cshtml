@@ -1,0 +1,58 @@
+@model ApiSessionListModel
+
+@{
+    Layout = "_AdminLayout";
+    ViewBag.PageTitle = T("Plugins.Misc.RestApi.Tabs.Sessions").Text;
+    NopHtml.SetActiveMenuItemSystemName(RestApiDefaults.AdminMenuSystemName);
+}
+
+<div class="content-header clearfix">
+    <h1 class="float-left">@T("Plugins.Misc.RestApi.Tabs.Sessions")</h1>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <partial name="~/Plugins/Misc.RestApi/Views/_Tabs.cshtml" />
+        <div class="card card-default">
+            <div class="card-body">
+                <p>@string.Format(T("Plugins.Misc.RestApi.Sessions.Count").Text, Model.TotalCount, Model.Sessions.Count)</p>
+                @if (Model.Sessions.Any())
+                {
+                    <table class="table table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                <th>@T("Plugins.Misc.RestApi.Sessions.Fields.Kind")</th>
+                                <th>@T("Plugins.Misc.RestApi.Sessions.Fields.Customer")</th>
+                                <th>@T("Plugins.Misc.RestApi.Sessions.Fields.Client")</th>
+                                <th>@T("Plugins.Misc.RestApi.Sessions.Fields.IpAddress")</th>
+                                <th>@T("Plugins.Misc.RestApi.Sessions.Fields.CreatedOn")</th>
+                                <th>@T("Plugins.Misc.RestApi.Sessions.Fields.LastUsedOn")</th>
+                                <th>@T("Plugins.Misc.RestApi.Sessions.Fields.ExpiresOn")</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var session in Model.Sessions)
+                            {
+                                <tr>
+                                    <td>@session.Kind</td>
+                                    <td><a asp-controller="Customer" asp-action="Edit" asp-route-id="@session.CustomerId">@(session.CustomerEmail ?? session.CustomerId.ToString())</a></td>
+                                    <td>@session.ClientName</td>
+                                    <td>@session.IpAddress</td>
+                                    <td>@session.CreatedOn</td>
+                                    <td>@session.LastUsedOn</td>
+                                    <td>@session.ExpiresOn</td>
+                                    <td>
+                                        <form asp-action="RevokeSession" asp-route-id="@session.Id" method="post">
+                                            <button type="submit" class="btn btn-sm btn-danger">@T("Plugins.Misc.RestApi.Sessions.Revoke")</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</section>

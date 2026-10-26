@@ -1,0 +1,99 @@
+@model ApiClientModel
+
+@{
+    Layout = "_AdminLayout";
+    var isNew = Model.Id == 0;
+    ViewBag.PageTitle = (isNew ? T("Plugins.Misc.RestApi.Clients.AddNew") : T("Plugins.Misc.RestApi.Clients.Edit")).Text;
+    NopHtml.SetActiveMenuItemSystemName(RestApiDefaults.AdminMenuSystemName);
+}
+
+<div class="content-header clearfix">
+    <h1 class="float-left">
+        @ViewBag.PageTitle
+        <small><i class="fas fa-circle-arrow-left"></i> <a asp-action="Clients">@T("Plugins.Misc.RestApi.Clients.BackToList")</a></small>
+    </h1>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <partial name="~/Plugins/Misc.RestApi/Views/_Tabs.cshtml" />
+
+        @if (!string.IsNullOrEmpty(Model.NewSecret))
+        {
+            <div class="alert alert-warning">
+                <p><strong>@T("Plugins.Misc.RestApi.Clients.SecretOnce")</strong></p>
+                <p>@T("Plugins.Misc.RestApi.Clients.Fields.ClientId") : <code>@Model.ClientId</code></p>
+                <p>@T("Plugins.Misc.RestApi.Clients.Secret") : <code>@Model.NewSecret</code></p>
+            </div>
+        }
+
+        <form asp-action="@(isNew ? "CreateClient" : "EditClient")" method="post">
+            <input asp-for="Id" type="hidden" />
+            <div asp-validation-summary="All"></div>
+            <div class="card card-default">
+                <div class="card-body">
+                    <p>@T("Plugins.Misc.RestApi.Clients.Hint")</p>
+                    @if (!isNew)
+                    {
+                        <div class="form-group row">
+                            <div class="col-md-3"><nop-label asp-for="ClientId" /></div>
+                            <div class="col-md-9"><div class="form-text-row"><code>@Model.ClientId</code></div></div>
+                        </div>
+                    }
+                    <div class="form-group row">
+                        <div class="col-md-3"><nop-label asp-for="Name" /></div>
+                        <div class="col-md-9"><nop-editor asp-for="Name" asp-required="true" /><span asp-validation-for="Name"></span></div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-3"><nop-label asp-for="CustomerEmail" /></div>
+                        <div class="col-md-9">
+                            <nop-editor asp-for="CustomerEmail" asp-required="true" />
+                            <span asp-validation-for="CustomerEmail"></span>
+                            @if (!isNew)
+                            {
+                                <div class="mt-1">
+                                    <a asp-controller="Customer" asp-action="Edit" asp-route-id="@Model.CustomerId">@T("Plugins.Misc.RestApi.Clients.ViewCustomer")</a>
+                                    @if (!Model.CustomerHasPermission)
+                                    {
+                                        <span class="badge bg-warning">@T("Plugins.Misc.RestApi.Clients.MissingPermission")</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-3"><nop-label asp-for="Active" /></div>
+                        <div class="col-md-9"><nop-editor asp-for="Active" /></div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-9 offset-md-3">
+                            <button type="submit" class="btn btn-primary"><i class="far fa-floppy-disk"></i> @T("Admin.Common.Save")</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        @if (!isNew)
+        {
+            <div class="card card-default">
+                <div class="card-header">@T("Plugins.Misc.RestApi.Clients.Security")</div>
+                <div class="card-body">
+                    <p>@string.Format(T("Plugins.Misc.RestApi.Settings.ActiveSessions").Text, Model.ActiveSessions)
+                        — <a asp-action="Sessions" asp-route-apiClientId="@Model.Id">@T("Plugins.Misc.RestApi.Tabs.Sessions")</a></p>
+                    <form asp-action="RevokeClientSessions" asp-route-id="@Model.Id" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-default">@T("Plugins.Misc.RestApi.Clients.RevokeSessions")</button>
+                    </form>
+                    <form asp-action="RegenerateSecret" asp-route-id="@Model.Id" method="post" class="d-inline"
+                          onsubmit="return confirm('@T("Plugins.Misc.RestApi.Clients.RegenerateSecret.Confirm")')">
+                        <button type="submit" class="btn btn-warning">@T("Plugins.Misc.RestApi.Clients.RegenerateSecret")</button>
+                    </form>
+                    <form asp-action="DeleteClient" asp-route-id="@Model.Id" method="post" class="d-inline"
+                          onsubmit="return confirm('@T("Admin.Common.AreYouSure")')">
+                        <button type="submit" class="btn btn-danger"><i class="far fa-trash-can"></i> @T("Admin.Common.Delete")</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</section>

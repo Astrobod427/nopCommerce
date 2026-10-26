@@ -1,0 +1,11 @@
+{
+  "Group": "Misc",
+  "FriendlyName": "REST API (storefront & back office)",
+  "SystemName": "Misc.RestApi",
+  "Version": "5.00.1",
+  "SupportedVersions": [ "5.00" ],
+  "Author": "Astrobod427",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Misc.RestApi.dll",
+  "Description": "JSON REST API for mobile apps and third-party software. Customer sign-in, real prices, cart and checkout; back-office access through API clients bound to nopCommerce accounts and permissions."
+}
