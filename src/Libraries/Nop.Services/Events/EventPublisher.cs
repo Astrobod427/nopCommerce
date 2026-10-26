@@ -23,6 +23,7 @@ public partial class EventPublisher : IEventPublisher
         var consumers = EngineContext.Current.ResolveAll<IConsumer<TEvent>>().ToList();
 
         foreach (var consumer in consumers)
+        {
             try
             {
                 //try to handle published event
@@ -33,10 +34,15 @@ public partial class EventPublisher : IEventPublisher
             }
             catch (Exception exception)
             {
+                //we should throw exception on AppStartedEvent, otherwise it will be swallowed and the app will start in not configured properly
+                if (@event is AppStartedEvent)
+                    throw;
+
                 //log error, we put in to nested try-catch to prevent possible cyclic (if some error occurs)
                 try
                 {
                     var logger = EngineContext.Current.Resolve<ILogger>();
+
                     if (logger == null)
                         return;
 
@@ -47,43 +53,7 @@ public partial class EventPublisher : IEventPublisher
                     // ignored
                 }
             }
-    }
-
-    /// <summary>
-    /// Publish event to consumers
-    /// </summary>
-    /// <typeparam name="TEvent">Type of event</typeparam>
-    /// <param name="event">Event object</param>
-    public virtual void Publish<TEvent>(TEvent @event)
-    {
-        //get all event consumers
-        var consumers = EngineContext.Current.ResolveAll<IConsumer<TEvent>>().ToList();
-
-        foreach (var consumer in consumers)
-            try
-            {
-                //try to handle published event
-                consumer.HandleEventAsync(@event).Wait();
-
-                if (@event is IStopProcessingEvent { StopProcessing: true })
-                    break;
-            }
-            catch (Exception exception)
-            {
-                //log error, we put in to nested try-catch to prevent possible cyclic (if some error occurs)
-                try
-                {
-                    var logger = EngineContext.Current.Resolve<ILogger>();
-                    if (logger == null)
-                        return;
-
-                    logger.Error(exception.Message, exception);
-                }
-                catch
-                {
-                    // ignored
-                }
-            }
+        }
     }
 
     #endregion

@@ -97,15 +97,6 @@ public static partial class AdminWidgetZones
     public static string FilterLevelValueDetailsButtons => "admin_filter_level_value_details_buttons";
     public static string FilterLevelValueDetailsBlock => "admin_filter_level_value_details_block";
     public static string FilterLevelValueListButtons => "admin_filter_level_value_list_buttons";
-    public static string ForumDetailsBottom => "admin_forum_details_bottom";
-    public static string ForumDetailsButtons => "admin_forum_details_buttons";
-    public static string ForumDetailsTop => "admin_forum_details_top";
-    public static string ForumGroupDetailsBottom => "admin_forum_group_details_bottom";
-    public static string ForumGroupDetailsButtons => "admin_forum_group_details_buttons";
-    public static string ForumGroupDetailsTop => "admin_forum_group_details_top";
-    public static string ForumListButtons => "admin_forum_list_buttons";
-    public static string ForumSettingsButtons => "admin_forum_settings_buttons";
-    public static string ForumSettingsDetailsBlock => "admin_forum_settings_details_block";
     public static string GdprSettingsButtons => "admin_gdpr_settings_buttons";
     public static string GdprSettingsDetailsBlock => "admin_gdpr_common_settings_details_block";
     public static string GdprConsentDetailsBottom => "admin_gdpr_consent_details_bottom";
@@ -159,6 +150,7 @@ public static partial class AdminWidgetZones
     public static string OrderAddressDetailsTop => "admin_order_address_details_top";
     public static string OrderBillingAddressDetailsBottom => "order_billing_address_details_bottom";
     public static string OrderDetailsBlock => "admin_order_details_block";
+    public static string OrderDetailsInfoPaymentMethodAdditionalData => "admin_order_details_info_payment_method_additional_data";
     public static string OrderDetailsButtons => "admin_order_details_buttons";
     public static string OrderListButtons => "admin_order_list_buttons";
     public static string OrderPartiallyRefundButtons => "admin_order_partially_refund_buttons";
@@ -182,9 +174,9 @@ public static partial class AdminWidgetZones
     public static string PluginDetailsButtons => "admin_plugin_details_buttons";
     public static string PluginDetailsTop => "admin_plugin_details_top";
     public static string PluginListButtons => "admin_plugin_list_buttons";
-    public static string PollDetailsBlock => "admin_poll_details_block";
-    public static string PollDetailsButtons => "admin_poll_details_buttons";
-    public static string PollListButtons => "admin_poll_list_buttons";
+    public static string PriceListListButtons => "admin_price_list_list_buttons";
+    public static string PriceListDetailsButtons => "admin_price_list_details_buttons";
+    public static string PriceListDetailsBlock => "admin_price_list_details_block";
     public static string ProductAttributeCombinationDetailsBottom => "admin_product_attribute_combination_details_bottom";
     public static string ProductAttributeCombinationDetailsButtons => "admin_product_attribute_combination_details_buttons";
     public static string ProductAttributeCombinationDetailsTop => "admin_product_attribute_combination_details_top";
@@ -263,6 +255,7 @@ public static partial class AdminWidgetZones
     public static string ShippingSettingsButtons => "admin_shipping_settings_buttons";
     public static string ShoppingCartSettingsDetailsBlock => "admin_shopping_cart_settings_details_block";
     public static string ShoppingCartSettingsButtons => "admin_shopping_cart_settings_buttons";
+    public static string SmsProviderListButtons => "admin_sms_provider_list_buttons";
     public static string SpecificationAttributeDetailsBlock => "admin_specification_attribute_details_block";
     public static string SpecificationAttributeDetailsButtons => "admin_specification_attribute_details_buttons";
     public static string SpecificationAttributeListButtons => "admin_specification_attribute_list_buttons";

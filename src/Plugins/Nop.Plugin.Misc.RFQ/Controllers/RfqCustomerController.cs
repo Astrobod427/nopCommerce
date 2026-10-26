@@ -240,9 +240,7 @@ public class RfqCustomerController : BasePublicController
 
         //validate CAPTCHA
         if (_captchaSettings.Enabled && _rfqSettings.ShowCaptchaOnRequestPage && !captchaValid)
-        {
             ModelState.AddModelError("", await _localizationService.GetResourceAsync("Common.WrongCaptchaMessage"));
-        }
 
         var (request, items) = await _rfqService.CreateRequestQuoteByShoppingCartAsync();
 
@@ -252,8 +250,10 @@ public class RfqCustomerController : BasePublicController
         var validationErrors = await ValidateFormAsync(request, items);
 
         if (validationErrors != null && validationErrors.Any())
+        {
             foreach (var validationError in validationErrors)
                 ModelState.AddModelError(string.Empty, validationError);
+        }
 
         if (ModelState.IsValid)
         {
@@ -422,6 +422,10 @@ public class RfqCustomerController : BasePublicController
                 return RedirectToRoute(RfqDefaults.CustomerQuotesRouteName);
 
             var quote = await _rfqService.GetQuoteByIdAsync(model.Id);
+
+            if (quote == null || quote.CustomerId != customer.Id)
+                return RedirectToRoute(RfqDefaults.CustomerQuotesRouteName);
+
             if (quote.Status is QuoteStatus.Expired or QuoteStatus.OrderCreated)
                 return RedirectToRoute(RfqDefaults.CustomerQuotesRouteName);
 

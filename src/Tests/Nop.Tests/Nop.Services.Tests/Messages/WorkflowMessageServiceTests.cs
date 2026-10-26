@@ -1,8 +1,7 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Nop.Core.Domain.Blogs;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Customers;
-using Nop.Core.Domain.Forums;
 using Nop.Core.Domain.Messages;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Shipping;
@@ -11,7 +10,6 @@ using Nop.Data;
 using Nop.Services.Blogs;
 using Nop.Services.Catalog;
 using Nop.Services.Customers;
-using Nop.Services.Forums;
 using Nop.Services.Messages;
 using Nop.Services.Orders;
 using Nop.Services.Shipping;
@@ -39,22 +37,17 @@ public class WorkflowMessageServiceTests : ServiceTest
     private Product _product;
     private OrderItem _orderItem;
     private ReturnRequest _returnRequest;
-    private Forum _forum;
-    private ForumTopic _forumTopic;
-    private ForumPost _forumPost;
     private PrivateMessage _privateMessage;
     private ProductReview _productReview;
     private GiftCard _giftCard;
     private BlogComment _blogComment;
     private BackInStockSubscription _backInStockSubscription;
-    private readonly IForumService _forumService;
 
     public WorkflowMessageServiceTests()
     {
         _workflowMessageService = GetService<IWorkflowMessageService>();
         _messageTemplateService = GetService<IMessageTemplateService>();
         _queuedEmailRepository = GetService<IRepository<QueuedEmail>>();
-        _forumService = GetService<IForumService>();
     }
 
     [OneTimeSetUp]
@@ -79,11 +72,6 @@ public class WorkflowMessageServiceTests : ServiceTest
         _subscription = new NewsLetterSubscription { Active = true, Email = NopTestsDefaults.AdminEmail, LanguageId = 1 };
         _product = await productService.GetProductByIdAsync(1);
         _returnRequest = new ReturnRequest { CustomerId = _customer.Id, OrderItemId = _orderItem.Id };
-        _forum = await _forumService.GetForumByIdAsync(1);
-        _forumTopic = new ForumTopic { CustomerId = _customer.Id, ForumId = _forum.Id, Subject = "Subject" };
-        await _forumService.InsertTopicAsync(_forumTopic, false);
-        _forumPost = new ForumPost { CustomerId = _customer.Id, TopicId = _forumTopic.Id, Text = "Text" };
-        await _forumService.InsertPostAsync(_forumPost, false);
 
         _privateMessage = new PrivateMessage
         {
@@ -130,9 +118,6 @@ public class WorkflowMessageServiceTests : ServiceTest
             template.IsActive = false;
             await _messageTemplateService.UpdateMessageTemplateAsync(template);
         }
-
-        await _forumService.DeletePostAsync(_forumPost);
-        await _forumService.DeleteTopicAsync(_forumTopic);
     }
 
     [SetUp]
@@ -393,31 +378,6 @@ public class WorkflowMessageServiceTests : ServiceTest
 
     #endregion
 
-    #region Forum Notifications
-
-    [Test]
-    public async Task CanSendNewForumTopicMessage()
-    {
-        await CheckData(async () =>
-            await _workflowMessageService.SendNewForumTopicMessageAsync(_customer, _forumTopic, _forum, 1));
-    }
-
-    [Test]
-    public async Task CanSendNewForumPostMessage()
-    {
-        await CheckData(async () =>
-            await _workflowMessageService.SendNewForumPostMessageAsync(_customer, _forumPost, _forumTopic, _forum, 1, 1));
-    }
-
-    [Test]
-    public async Task CanSendPrivateMessageNotification()
-    {
-        await CheckData(async () =>
-            await _workflowMessageService.SendPrivateMessageNotificationAsync(_privateMessage, 1));
-    }
-
-    #endregion
-
     #region Misc
 
     [Test]
@@ -487,7 +447,7 @@ public class WorkflowMessageServiceTests : ServiceTest
     public async Task CanSendContactUsMessage()
     {
         await CheckData(async () =>
-            await _workflowMessageService.SendContactUsMessageAsync(1, NopTestsDefaults.AdminEmail, "sender name", "subject", "body"));
+            await _workflowMessageService.SendContactUsMessageAsync(1, NopTestsDefaults.AdminEmail, "sender name", "subject", "body", null));
     }
 
     [Test]

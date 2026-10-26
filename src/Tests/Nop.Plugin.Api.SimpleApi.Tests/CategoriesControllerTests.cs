@@ -5,6 +5,7 @@ using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.SimpleApi.Controllers;
 using Nop.Plugin.Api.SimpleApi.DTOs;
 using Nop.Services.Catalog;
+using Nop.Services.Media;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,13 +15,15 @@ namespace Nop.Plugin.Api.SimpleApi.Tests;
 public class CategoriesControllerTests
 {
     private Mock<ICategoryService> _categoryServiceMock;
+    private Mock<IPictureService> _pictureServiceMock;
     private CategoriesController _categoriesController;
 
     [SetUp]
     public void Setup()
     {
         _categoryServiceMock = new Mock<ICategoryService>();
-        _categoriesController = new CategoriesController(_categoryServiceMock.Object);
+        _pictureServiceMock = new Mock<IPictureService>();
+        _categoriesController = new CategoriesController(_categoryServiceMock.Object, _pictureServiceMock.Object);
     }
 
     [TearDown]

@@ -26,6 +26,11 @@ public static partial class TokenGroupNames
     public static string ShipmentTokens => "Shipment tokens";
 
     /// <summary>
+    /// Represents tokens with information about the shopping cart
+    /// </summary>
+    public static string ShoppingCartTokens => "Shopping cart tokens";
+
+    /// <summary>
     /// Represents tokens with information about the refunded order
     /// </summary>
     public static string RefundedOrderTokens => "Refunded order  tokens";
@@ -54,21 +59,6 @@ public static partial class TokenGroupNames
     /// Represents tokens with information about the return request
     /// </summary>
     public static string ReturnRequestTokens => "Return request tokens";
-
-    /// <summary>
-    /// Represents tokens with information about the forum
-    /// </summary>
-    public static string ForumTokens => "Forum tokens";
-
-    /// <summary>
-    /// Represents tokens with information about the forum topic
-    /// </summary>
-    public static string ForumTopicTokens => "Forum topic tokens";
-
-    /// <summary>
-    /// Represents tokens with information about the forum post
-    /// </summary>
-    public static string ForumPostTokens => "Forum post tokens";
 
     /// <summary>
     /// Represents tokens with information about the private message

@@ -17,7 +17,7 @@ namespace Nop.Plugin.Misc.RFQ;
 /// <summary>
 /// Represents the "Request a quote" and "Quotes" plugin
 /// </summary>
-public class RfqPlugin : BasePlugin, IWidgetPlugin, IMiscPlugin
+public class RfqPlugin : BasePlugin, IMiscPlugin, IWidgetPlugin
 {
     #region Fields
 
@@ -169,9 +169,9 @@ public class RfqPlugin : BasePlugin, IWidgetPlugin, IMiscPlugin
             ["Plugins.Misc.RFQ.CustomerRequest.Info"] = "Request info",
             ["Plugins.Misc.RFQ.CustomerQuote.Info"] = "Quote info",
             ["Plugins.Misc.RFQ.Fields.Quote.CreatedOn"] = "Created on",
-            ["Plugins.Misc.RFQ.Fields.Quote.CreatedOn.Hint"] = "The date/time that the quote was created.",
+            ["Plugins.Misc.RFQ.Fields.Quote.CreatedOn.Hint"] = "The date/time (in the current customer time zone) that the quote was created.",
             ["Plugins.Misc.RFQ.Fields.RequestQuote.CreatedOn"] = "Created on",
-            ["Plugins.Misc.RFQ.Fields.RequestQuote.CreatedOn.Hint"] = "The date/time that the request a quote was created.",
+            ["Plugins.Misc.RFQ.Fields.RequestQuote.CreatedOn.Hint"] = "The date/time (in the current customer time zone) that the request a quote was created.",
             ["Plugins.Misc.RFQ.Fields.Quote.Status"] = "Status",
             ["Plugins.Misc.RFQ.Fields.Quote.Status.Hint"] = "The status of the quote",
             ["Plugins.Misc.RFQ.Fields.RequestQuote.Status"] = "Status",

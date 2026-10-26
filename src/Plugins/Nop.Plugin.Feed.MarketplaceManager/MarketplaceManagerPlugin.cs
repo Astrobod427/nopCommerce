@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Nop.Plugin.Feed.MarketplaceManager.Services;
 using Nop.Services.Plugins;
 using Nop.Core;
+using Nop.Services.Helpers;
 
 namespace Nop.Plugin.Feed.MarketplaceManager
 {

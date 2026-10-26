@@ -3,6 +3,7 @@ using Nop.Services.Configuration;
 using System;
 using System.Threading.Tasks;
 using Nop.Core;
+using Nop.Services.Helpers;
 
 namespace Nop.Plugin.Api.SimpleApi
 {

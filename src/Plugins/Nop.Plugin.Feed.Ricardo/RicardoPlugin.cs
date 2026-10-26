@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Nop.Plugin.Feed.Ricardo.Services;
 
 using Nop.Core;
+using Nop.Services.Helpers;
 using Nop.Services.Localization;
 using System.Collections.Generic;
 using System.Threading.Tasks;

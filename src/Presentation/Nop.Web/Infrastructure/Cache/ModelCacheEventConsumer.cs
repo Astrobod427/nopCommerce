@@ -6,7 +6,6 @@ using Nop.Core.Domain.Localization;
 using Nop.Core.Domain.Media;
 using Nop.Core.Domain.Menus;
 using Nop.Core.Domain.Orders;
-using Nop.Core.Domain.Polls;
 using Nop.Core.Domain.Topics;
 using Nop.Core.Domain.Vendors;
 using Nop.Core.Events;
@@ -68,12 +67,12 @@ public partial class ModelCacheEventConsumer :
     IConsumer<EntityInsertedEvent<ProductPicture>>,
     IConsumer<EntityUpdatedEvent<ProductPicture>>,
     IConsumer<EntityDeletedEvent<ProductPicture>>,
+    //Product 3D objects
+    IConsumer<EntityInsertedEvent<Product3dObject>>,
+    IConsumer<EntityUpdatedEvent<Product3dObject>>,
+    IConsumer<EntityDeletedEvent<Product3dObject>>,
     //Product review
     IConsumer<EntityDeletedEvent<ProductReview>>,
-    //polls
-    IConsumer<EntityInsertedEvent<Poll>>,
-    IConsumer<EntityUpdatedEvent<Poll>>,
-    IConsumer<EntityDeletedEvent<Poll>>,
     //blog posts
     IConsumer<EntityInsertedEvent<BlogPost>>,
     IConsumer<EntityUpdatedEvent<BlogPost>>,
@@ -471,24 +470,24 @@ public partial class ModelCacheEventConsumer :
 
     #endregion
 
-    #region Polls
+    #region Product 3D objects
 
     /// <returns>A task that represents the asynchronous operation</returns>
-    public virtual async Task HandleEventAsync(EntityInsertedEvent<Poll> eventMessage)
+    public virtual async Task HandleEventAsync(EntityInsertedEvent<Product3dObject> eventMessage)
     {
-        await _staticCacheManager.RemoveByPrefixAsync(NopModelCacheDefaults.PollsPrefixCacheKey);
+        await _staticCacheManager.RemoveByPrefixAsync(string.Format(NopModelCacheDefaults.Product3dObjectPrefixCacheKeyById, eventMessage.Entity.ProductId));
     }
 
     /// <returns>A task that represents the asynchronous operation</returns>
-    public virtual async Task HandleEventAsync(EntityUpdatedEvent<Poll> eventMessage)
+    public virtual async Task HandleEventAsync(EntityUpdatedEvent<Product3dObject> eventMessage)
     {
-        await _staticCacheManager.RemoveByPrefixAsync(NopModelCacheDefaults.PollsPrefixCacheKey);
+        await _staticCacheManager.RemoveByPrefixAsync(string.Format(NopModelCacheDefaults.Product3dObjectPrefixCacheKeyById, eventMessage.Entity.ProductId));
     }
 
     /// <returns>A task that represents the asynchronous operation</returns>
-    public virtual async Task HandleEventAsync(EntityDeletedEvent<Poll> eventMessage)
+    public virtual async Task HandleEventAsync(EntityDeletedEvent<Product3dObject> eventMessage)
     {
-        await _staticCacheManager.RemoveByPrefixAsync(NopModelCacheDefaults.PollsPrefixCacheKey);
+        await _staticCacheManager.RemoveByPrefixAsync(string.Format(NopModelCacheDefaults.Product3dObjectPrefixCacheKeyById, eventMessage.Entity.ProductId));
     }
 
     #endregion
