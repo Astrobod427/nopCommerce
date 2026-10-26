@@ -153,3 +153,9 @@ Pointer vers l'IP du VPS :
 ### Important: Label Traefik réseau
 
 Le label `traefik.docker.network=portainer-stack_traefik-net` est obligatoire car le container est sur plusieurs réseaux. Sans ce label, Traefik ne peut pas router correctement.
+
+## Specs = source de vérité (Spec Kit)
+- Constitution : `.specify/memory/constitution.md`. Fonctionnalités : `specs/NNN-nom/` (spec.md, tasks.md, plan.md au besoin).
+- Le Kanban Hermes (board `webshops`) ne fait que refléter : une carte par spec, qui pointe vers son dossier.
+- Toute décision ou tâche faite s'écrit d'abord dans la spec (tâche cochée seulement si vérifiée sur le réel), puis commentaire sur la carte.
+- Ordre de travail : staging vps2 sur copie de la base prod → feu vert François → prod vps1.
