@@ -9,6 +9,8 @@ COPY ./src ./
 
 # build solution (builds every plugin, custom ones included, into Nop.Web/Plugins)
 RUN dotnet build NopCommerce.sln --no-incremental -c Release
+# rebuild Nop.Web so its post-build step cleans every plugin folder (custom plugins may build after it)
+RUN dotnet build Presentation/Nop.Web/Nop.Web.csproj -c Release
 
 # publish project
 WORKDIR /src/Presentation/Nop.Web   
