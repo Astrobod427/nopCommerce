@@ -9,4 +9,5 @@
 - [ ] T007 Sauvegarde de la base prod (vps1) juste avant — E4
 - [ ] T008 Fusionner `upgrade/net10-2026-10` dans `develop`, publier l'image — E1
 - [ ] T009 Déployer sur vps1 (Portainer `compose/27`), garder l'image précédente — E1, E6
+- [ ] T009b Prod : désinstaller SimpleApi dans l'admin puis supprimer `/opt/docker/nopcommerce/plugins/Api.SimpleApi` (le volume Plugins le garderait sinon) — spec 002 E8
 - [ ] T010 Vérifier la prod réelle (boutique, admin, plugins chargés, version 5.00) — E1

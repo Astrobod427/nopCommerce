@@ -23,7 +23,9 @@ mais adapté au système natif.
   que la boutique web).
 - **E6** — Sessions expirées purgées automatiquement (tâche planifiée nopCommerce).
 - **E7** — Réglages de l'app mobile (couleurs, logo) gérés depuis l'admin du plugin.
-- **E8** — Remplace SimpleApi : l'app mobile est migrée, puis SimpleApi retirée de la prod.
+- **E8** — Remplace SimpleApi : SimpleApi est retirée du code et de la prod. Décision François (2026-10-27) :
+  SimpleApi servait surtout à l'app mobile, peu importante → retrait sans attendre ; l'app mobile
+  (`src/MobileApp`, prototype Flutter) est hors service jusqu'à sa migration vers RestApi (spec à venir).
 
 ## Hors périmètre
 - Compatibilité avec l'API payante officielle nopCommerce.

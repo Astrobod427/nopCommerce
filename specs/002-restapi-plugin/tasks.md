@@ -9,7 +9,8 @@
 - [x] T007 Pages d'admin : réglages, gestion des clients API, réglages app mobile — E1, E4, E7
 - [x] T008 Tests (accès refusé hors de ses données, prix = boutique web) — E3, E5
 - [x] T009 Validation sur le staging vps2 — constitution III
-- [ ] T010 Migrer l'app mobile, retirer SimpleApi — E8
+- [x] T010 Retirer SimpleApi (plugin, tests, solution) ; app mobile mise en attente — E8 (staging 2026-10-27 : image sans SimpleApi, /api/simple → 404, e2e RestApi 38/38)
+- [ ] T011 Migrer l'app mobile vers RestApi (jetons, panier côté serveur) — reportée, pas prioritaire
 
 ## Validation 2026-10-26 (staging vps2, copie de la base prod)
 `tests/e2e_restapi.py` : **38/38 OK** — invité, inscription (panier conservé), connexion, prix API = prix boutique web,

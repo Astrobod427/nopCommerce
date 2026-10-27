@@ -1,3 +1,6 @@
+> ⚠️ **2026-10-27 : SimpleApi retirée** (remplacée par le module `Misc.RestApi`, spec 002). L'app ci-dessous
+> appelle encore `/api/simple` + `X-API-KEY` : **hors service** jusqu'à sa migration (spec 002, T011).
+
 # État d'avancement - App Mobile nopCommerce (Flutter)
 
 Date : 31 Décembre 2025
