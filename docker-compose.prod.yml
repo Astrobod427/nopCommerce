@@ -3,16 +3,45 @@ services:
     image: ghcr.io/astrobod427/nopcommerce:latest
     container_name: nopcommerce
     restart: unless-stopped
-    entrypoint: ["/opt/entrypoint.sh"]
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      # Bind mounts directs - plus fiables que les volumes nommés
-      - /opt/docker/nopcommerce/appdata:/app/App_Data
-      - /opt/docker/nopcommerce/plugins:/app/Plugins
-      - /opt/docker/nopcommerce/wwwroot:/app/wwwroot
-      - /opt/docker/nopcommerce/entrypoint.sh:/opt/entrypoint.sh:ro
+      # Copie de la stack Portainer compose/27 (vps1), volumes nommés nopcommerce-stack_*.
+      # Pas de volume sur /app/Plugins ni sur tout /app/wwwroot : ils masqueraient les plugins,
+      # CSS et JS de l'image à chaque mise à jour. Seules les données de la boutique sont gardées,
+      # via des sous-dossiers du volume nopcommerce_content existant (Docker >= 26).
+      - nopcommerce_appdata:/app/App_Data
+      - type: volume
+        source: nopcommerce_content
+        target: /app/wwwroot/images/thumbs
+        volume:
+          subpath: images/thumbs
+      - type: volume
+        source: nopcommerce_content
+        target: /app/wwwroot/images/uploaded
+        volume:
+          subpath: images/uploaded
+      - type: volume
+        source: nopcommerce_content
+        target: /app/wwwroot/icons
+        volume:
+          subpath: icons
+      - type: volume
+        source: nopcommerce_content
+        target: /app/wwwroot/files
+        volume:
+          subpath: files
+      - type: volume
+        source: nopcommerce_content
+        target: /app/wwwroot/sitemaps
+        volume:
+          subpath: sitemaps
+      - type: volume
+        source: nopcommerce_content
+        target: /app/wwwroot/db_backups
+        volume:
+          subpath: db_backups
     depends_on:
       postgres:
         condition: service_healthy
@@ -22,7 +51,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=portainer-stack_traefik-net"
-      - "traefik.http.routers.nopcommerce.rule=Host(`nopcommerce.petitnuage.cloud`)"
+      - "traefik.http.routers.nopcommerce.rule=Host(`nopcommerce.petitnuage.cloud`) || Host(`zarraya.petitnuage.cloud`)"
       - "traefik.http.routers.nopcommerce.entrypoints=websecure"
       - "traefik.http.routers.nopcommerce.tls.certresolver=letsencrypt"
       - "traefik.http.services.nopcommerce.loadbalancer.server.port=80"
@@ -36,7 +65,7 @@ services:
       POSTGRES_USER: nopcommerce
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - /opt/docker/nopcommerce/postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
       - /opt/docker/nopcommerce/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - nopcommerce-internal
@@ -52,3 +81,8 @@ networks:
     name: portainer-stack_traefik-net
   nopcommerce-internal:
     driver: bridge
+
+volumes:
+  nopcommerce_appdata:
+  nopcommerce_content:
+  postgres_data:
