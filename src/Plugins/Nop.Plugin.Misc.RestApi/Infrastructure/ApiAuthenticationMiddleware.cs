@@ -4,10 +4,13 @@ using Newtonsoft.Json;
 using Nop.Core;
 using Nop.Data;
 using Nop.Plugin.Misc.RestApi.Api;
+using Nop.Plugin.Misc.RestApi.Domain;
 using Nop.Plugin.Misc.RestApi.Services;
 using Nop.Services.Customers;
+using Nop.Services.Helpers;
 using Nop.Services.Directory;
 using Nop.Services.Localization;
+using Nop.Services.Logging;
 using Nop.Services.Themes;
 
 namespace Nop.Plugin.Misc.RestApi.Infrastructure;
@@ -68,10 +71,33 @@ public class ApiAuthenticationMiddleware
             var store = await services.GetRequiredService<IStoreContext>().GetCurrentStoreAsync();
             var customer = token == null ? null : await services.GetRequiredService<ICustomerService>().GetCustomerByIdAsync(token.CustomerId);
 
-            if (token == null || token.StoreId != store.Id || customer == null || customer.Deleted || !customer.Active || customer.RequireReLogin)
+            //a pending second-factor session grants no access
+            if (token == null || token.Kind == ApiTokenKind.MfaPending || token.StoreId != store.Id
+                || customer == null || customer.Deleted || !customer.Active || customer.RequireReLogin)
             {
                 await WriteErrorAsync(context, StatusCodes.Status401Unauthorized, "invalid_token", "The access token is missing, invalid or expired.");
                 return;
+            }
+
+            if (token.ApiClientId.HasValue)
+            {
+                var client = await tokenService.GetClientByIdAsync(token.ApiClientId.Value);
+                if (client is not { Active: true })
+                {
+                    await WriteErrorAsync(context, StatusCodes.Status401Unauthorized, "invalid_token", "The access token is missing, invalid or expired.");
+                    return;
+                }
+
+                var ip = services.GetRequiredService<IWebHelper>().GetCurrentIpAddress();
+                if (!ApiTokenService.IsIpAllowed(client, ip))
+                {
+                    await services.GetRequiredService<ICustomerActivityService>().InsertActivityAsync(customer, RestApiDefaults.ActivityLogRequestRefused,
+                        $"REST API: client '{client.Name}' refused from IP address {ip} (not in its allowed addresses)");
+                    await WriteErrorAsync(context, StatusCodes.Status403Forbidden, "ip_not_allowed", "This API client may not connect from this IP address.");
+                    return;
+                }
+
+                context.Items[RestApiDefaults.HttpContextClientKey] = client;
             }
 
             var workContext = services.GetRequiredService<IWorkContext>();
@@ -95,5 +121,28 @@ public class ApiAuthenticationMiddleware
         }
 
         await _next(context);
+
+        await LogBackOfficeWriteAsync(context);
+    }
+
+    /// <summary>
+    /// Writes every back-office change made through the API to the nopCommerce activity log
+    /// </summary>
+    protected static async Task LogBackOfficeWriteAsync(HttpContext context)
+    {
+        if (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method) || HttpMethods.IsOptions(context.Request.Method))
+            return;
+
+        if (!context.Items.TryGetValue(RestApiDefaults.HttpContextTokenKey, out var value) || value is not ApiToken { Kind: ApiTokenKind.BackOffice } token)
+            return;
+
+        var services = context.RequestServices;
+        var clientName = context.Items.TryGetValue(RestApiDefaults.HttpContextClientKey, out var client) && client is ApiClient apiClient
+            ? apiClient.Name
+            : $"#{token.ApiClientId}";
+        var customer = await services.GetRequiredService<ICustomerService>().GetCustomerByIdAsync(token.CustomerId);
+
+        await services.GetRequiredService<ICustomerActivityService>().InsertActivityAsync(customer, RestApiDefaults.ActivityLogBackOfficeWrite,
+            $"REST API ({clientName}): {context.Request.Method} {context.Request.Path} → {context.Response.StatusCode}");
     }
 }

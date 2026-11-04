@@ -90,6 +90,13 @@ public class RestApiAdminController : BasePluginController
         return (await _apiTokenService.SearchTokensAsync(kind, apiClientId, pageSize: 1)).TotalCount;
     }
 
+    protected static string NormalizeIpList(string value)
+    {
+        var entries = (value ?? string.Empty).Split(['\n', '\r', ',', ';', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Distinct();
+
+        return string.Join(Environment.NewLine, entries) is { Length: > 0 } list ? list : null;
+    }
+
     protected virtual async Task<ApiClientModel> PrepareClientModelAsync(ApiClientModel model, ApiClient client)
     {
         if (client == null)
@@ -99,6 +106,7 @@ public class RestApiAdminController : BasePluginController
         model.Id = client.Id;
         model.Name ??= client.Name;
         model.CustomerEmail ??= customer?.Email;
+        model.AllowedIpAddresses ??= client.AllowedIpAddresses;
         model.ClientId = client.ClientId;
         model.CustomerId = client.CustomerId;
         model.CustomerHasPermission = customer != null && await _permissionService.AuthorizeAsync(RestApiPermissionConfigManager.USE_BACKOFFICE_API, customer);
@@ -134,6 +142,9 @@ public class RestApiAdminController : BasePluginController
             StorefrontTokenLifetimeDays = _settings.StorefrontTokenLifetimeDays,
             BackOfficeTokenLifetimeMinutes = _settings.BackOfficeTokenLifetimeMinutes,
             MaxPageSize = _settings.MaxPageSize,
+            RequestsPerMinute = _settings.RequestsPerMinute,
+            AuthRequestsPerMinute = _settings.AuthRequestsPerMinute,
+            CorsAllowedOrigins = _settings.CorsAllowedOrigins,
             AppPrimaryColor = _settings.AppPrimaryColor,
             AppSecondaryColor = _settings.AppSecondaryColor,
             AppLogoPictureId = _settings.AppLogoPictureId,
@@ -149,6 +160,17 @@ public class RestApiAdminController : BasePluginController
     [CheckPermission(RestApiPermissionConfigManager.MANAGE_API)]
     public virtual async Task<IActionResult> Configure(ConfigurationModel model)
     {
+        var origins = (model.CorsAllowedOrigins ?? string.Empty)
+            .Split(['\n', '\r', ',', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(origin => origin.TrimEnd('/'))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        var invalidOrigins = origins.Where(origin => origin != "*"
+            && !(Uri.TryCreate(origin, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp) && uri.PathAndQuery == "/")).ToList();
+        if (invalidOrigins.Any())
+            ModelState.AddModelError(nameof(model.CorsAllowedOrigins),
+                string.Format(await _localizationService.GetResourceAsync("Plugins.Misc.RestApi.Fields.CorsAllowedOrigins.Invalid"), string.Join(", ", invalidOrigins)));
+
         if (!ModelState.IsValid)
             return await Configure();
 
@@ -157,6 +179,9 @@ public class RestApiAdminController : BasePluginController
         _settings.StorefrontTokenLifetimeDays = Math.Clamp(model.StorefrontTokenLifetimeDays, 1, 365);
         _settings.BackOfficeTokenLifetimeMinutes = Math.Clamp(model.BackOfficeTokenLifetimeMinutes, 5, 24 * 60);
         _settings.MaxPageSize = Math.Clamp(model.MaxPageSize, 1, 1000);
+        _settings.RequestsPerMinute = Math.Clamp(model.RequestsPerMinute, 0, 100_000);
+        _settings.AuthRequestsPerMinute = Math.Clamp(model.AuthRequestsPerMinute, 0, 10_000);
+        _settings.CorsAllowedOrigins = string.Join(Environment.NewLine, origins);
         _settings.AppPrimaryColor = model.AppPrimaryColor?.Trim();
         _settings.AppSecondaryColor = model.AppSecondaryColor?.Trim();
         _settings.AppLogoPictureId = model.AppLogoPictureId;
@@ -212,10 +237,15 @@ public class RestApiAdminController : BasePluginController
         if (customer == null)
             ModelState.AddModelError(nameof(model.CustomerEmail), await _localizationService.GetResourceAsync("Plugins.Misc.RestApi.Clients.Fields.CustomerEmail.Invalid"));
 
+        var (_, invalidIps) = ApiTokenService.ParseIpList(model.AllowedIpAddresses);
+        if (invalidIps.Any())
+            ModelState.AddModelError(nameof(model.AllowedIpAddresses),
+                string.Format(await _localizationService.GetResourceAsync("Plugins.Misc.RestApi.Clients.Fields.AllowedIpAddresses.Invalid"), string.Join(", ", invalidIps)));
+
         if (!ModelState.IsValid)
             return View(VIEW_PATH + "ClientEdit.cshtml", model);
 
-        var (client, secret) = await _apiTokenService.CreateClientAsync(model.Name.Trim(), customer!.Id, model.Active);
+        var (client, secret) = await _apiTokenService.CreateClientAsync(model.Name.Trim(), customer!.Id, model.Active, NormalizeIpList(model.AllowedIpAddresses));
         await _customerActivityService.InsertActivityAsync("EditSettings", $"REST API: client '{client.Name}' created for {customer.Email}");
 
         var result = await PrepareClientModelAsync(new ApiClientModel { Active = client.Active, NewSecret = secret }, client);
@@ -250,12 +280,20 @@ public class RestApiAdminController : BasePluginController
         if (customer == null)
             ModelState.AddModelError(nameof(model.CustomerEmail), await _localizationService.GetResourceAsync("Plugins.Misc.RestApi.Clients.Fields.CustomerEmail.Invalid"));
 
+        var (_, invalidIps) = ApiTokenService.ParseIpList(model.AllowedIpAddresses);
+        if (invalidIps.Any())
+            ModelState.AddModelError(nameof(model.AllowedIpAddresses),
+                string.Format(await _localizationService.GetResourceAsync("Plugins.Misc.RestApi.Clients.Fields.AllowedIpAddresses.Invalid"), string.Join(", ", invalidIps)));
+
         if (!ModelState.IsValid)
             return View(VIEW_PATH + "ClientEdit.cshtml", await PrepareClientModelAsync(model, client));
 
         //a new account or a deactivation ends the current sessions of the client
-        var revoke = client.CustomerId != customer!.Id || (client.Active && !model.Active);
+        var allowedIps = NormalizeIpList(model.AllowedIpAddresses);
+        var revoke = client.CustomerId != customer!.Id || (client.Active && !model.Active)
+            || (!string.IsNullOrEmpty(allowedIps) && allowedIps != client.AllowedIpAddresses);
         client.Name = model.Name.Trim();
+        client.AllowedIpAddresses = allowedIps;
         client.CustomerId = customer.Id;
         client.Active = model.Active;
         await _apiTokenService.UpdateClientAsync(client);

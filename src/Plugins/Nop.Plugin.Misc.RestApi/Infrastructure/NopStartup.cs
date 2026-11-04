@@ -19,7 +19,9 @@ public class NopStartup : INopStartup
     /// <param name="configuration">Configuration of the application</param>
     public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSingleton<ApiRateLimiter>();
         services.AddScoped<ApiTokenService>();
+        services.AddScoped<MfaService>();
         services.AddScoped<ApiModelFactory>();
         services.AddScoped<BackOfficeModelFactory>();
     }
@@ -30,6 +32,7 @@ public class NopStartup : INopStartup
     /// <param name="application">Builder for configuring an application's request pipeline</param>
     public void Configure(IApplicationBuilder application)
     {
+        application.UseMiddleware<ApiProtectionMiddleware>();
         application.UseMiddleware<ApiAuthenticationMiddleware>();
     }
 

@@ -24,6 +24,15 @@ public record ConfigurationModel : BaseNopModel
     [NopResourceDisplayName("Plugins.Misc.RestApi.Fields.MaxPageSize")]
     public int MaxPageSize { get; set; }
 
+    [NopResourceDisplayName("Plugins.Misc.RestApi.Fields.RequestsPerMinute")]
+    public int RequestsPerMinute { get; set; }
+
+    [NopResourceDisplayName("Plugins.Misc.RestApi.Fields.AuthRequestsPerMinute")]
+    public int AuthRequestsPerMinute { get; set; }
+
+    [NopResourceDisplayName("Plugins.Misc.RestApi.Fields.CorsAllowedOrigins")]
+    public string CorsAllowedOrigins { get; set; }
+
     [NopResourceDisplayName("Plugins.Misc.RestApi.Fields.AppPrimaryColor")]
     public string AppPrimaryColor { get; set; }
 
@@ -86,6 +95,9 @@ public record ApiClientModel : BaseNopEntityModel
 
     [NopResourceDisplayName("Plugins.Misc.RestApi.Clients.Fields.Active")]
     public bool Active { get; set; }
+
+    [NopResourceDisplayName("Plugins.Misc.RestApi.Clients.Fields.AllowedIpAddresses")]
+    public string AllowedIpAddresses { get; set; }
 
     [NopResourceDisplayName("Plugins.Misc.RestApi.Clients.Fields.ClientId")]
     public string ClientId { get; set; }

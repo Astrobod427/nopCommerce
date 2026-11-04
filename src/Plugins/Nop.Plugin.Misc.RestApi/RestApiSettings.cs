@@ -46,4 +46,20 @@ public class RestApiSettings : ISettings
     /// Gets or sets the mobile app logo picture identifier (0 = store logo)
     /// </summary>
     public int AppLogoPictureId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum number of API requests per minute and per IP address (0 = no limit)
+    /// </summary>
+    public int RequestsPerMinute { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum number of sign-in, registration, guest session and client token requests
+    /// per minute and per IP address (0 = no limit)
+    /// </summary>
+    public int AuthRequestsPerMinute { get; set; }
+
+    /// <summary>
+    /// Gets or sets the web origins allowed to call the API from a browser (CORS), one per line; * = any origin
+    /// </summary>
+    public string CorsAllowedOrigins { get; set; }
 }

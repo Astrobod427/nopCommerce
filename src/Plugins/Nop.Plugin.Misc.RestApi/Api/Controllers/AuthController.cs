@@ -10,6 +10,7 @@ using Nop.Plugin.Misc.RestApi.Factories;
 using Nop.Plugin.Misc.RestApi.Services;
 using Nop.Services.Common;
 using Nop.Services.Customers;
+using Nop.Services.Helpers;
 using Nop.Services.Localization;
 using Nop.Services.Logging;
 using Nop.Services.Messages;
@@ -40,7 +41,9 @@ public class AuthController : BaseApiController
     protected readonly IStoreContext _storeContext;
     protected readonly IWorkContext _workContext;
     protected readonly IWorkflowMessageService _workflowMessageService;
+    protected readonly IWebHelper _webHelper;
     protected readonly LocalizationSettings _localizationSettings;
+    protected readonly MfaService _mfaService;
     protected readonly RestApiSettings _settings;
 
     #endregion
@@ -60,8 +63,10 @@ public class AuthController : BaseApiController
         IShoppingCartService shoppingCartService,
         IStoreContext storeContext,
         IWorkContext workContext,
+        IWebHelper webHelper,
         IWorkflowMessageService workflowMessageService,
         LocalizationSettings localizationSettings,
+        MfaService mfaService,
         RestApiSettings settings)
     {
         _apiModelFactory = apiModelFactory;
@@ -78,7 +83,9 @@ public class AuthController : BaseApiController
         _storeContext = storeContext;
         _workContext = workContext;
         _workflowMessageService = workflowMessageService;
+        _webHelper = webHelper;
         _localizationSettings = localizationSettings;
+        _mfaService = mfaService;
         _settings = settings;
     }
 
@@ -103,6 +110,45 @@ public class AuthController : BaseApiController
             ExpiresAt = entity.ExpiresOnUtc,
             Customer = await _apiModelFactory.PrepareCustomerInfoAsync(customer)
         };
+    }
+
+    /// <summary>
+    /// Issues the session of a signed-in customer, with the same bookkeeping as a web sign-in
+    /// </summary>
+    protected virtual async Task<TokenResponse> CompleteSignInAsync(Customer customer)
+    {
+        await TakeOverGuestSessionAsync(customer);
+
+        customer.RequireReLogin = false;
+        await _customerService.UpdateCustomerAsync(customer);
+        await _eventPublisher.PublishAsync(new CustomerLoggedinEvent(customer));
+        await _customerActivityService.InsertActivityAsync(customer, "PublicStore.Login", await _localizationService.GetResourceAsync("ActivityLog.PublicStore.Login"), customer);
+
+        return await IssueStorefrontTokenAsync(customer);
+    }
+
+    /// <summary>
+    /// The password is right and the account uses a second factor: issues a pending session (no access)
+    /// </summary>
+    protected virtual async Task<IActionResult> MfaChallengeAsync(string login)
+    {
+        var customer = _customerSettings.UsernamesEnabled
+            ? await _customerService.GetCustomerByUsernameAsync(login)
+            : await _customerService.GetCustomerByEmailAsync(login);
+        if (customer == null)
+            return ApiError(StatusCodes.Status401Unauthorized, "invalid_credentials", await _localizationService.GetResourceAsync("Account.Login.WrongCredentials"));
+
+        if (!await _permissionService.AuthorizeAsync(RestApiPermissionConfigManager.USE_STOREFRONT_API, customer))
+            return ApiError(StatusCodes.Status403Forbidden, "forbidden", "This account is not allowed to use the API.");
+
+        var provider = await _mfaService.GetActiveProviderAsync(customer);
+        if (!_mfaService.IsSupported(provider))
+            return ApiError(StatusCodes.Status403Forbidden, "mfa_not_supported", $"The second-factor method '{provider}' of this account is not supported by the API. Sign in on the web store.");
+
+        var store = await _storeContext.GetCurrentStoreAsync();
+        var (token, entity) = await _apiTokenService.IssueTokenAsync(ApiTokenKind.MfaPending, customer.Id, store.Id, RestApiDefaults.MfaPendingTokenLifetime);
+
+        return ApiOk(new MfaChallengeResponse { MfaToken = token, Provider = provider, ExpiresAt = entity.ExpiresOnUtc });
     }
 
     /// <summary>
@@ -160,13 +206,17 @@ public class AuthController : BaseApiController
             case CustomerLoginResults.Successful:
                 break;
             case CustomerLoginResults.MultiFactorAuthenticationRequired:
-                return ApiError(StatusCodes.Status403Forbidden, "mfa_required", "This account uses multi-factor authentication, which the API does not support yet. Sign in on the web store.");
+                return await MfaChallengeAsync(login);
             case CustomerLoginResults.LockedOut:
                 return ApiError(StatusCodes.Status403Forbidden, "locked_out", await _localizationService.GetResourceAsync("Account.Login.WrongCredentials.LockedOut"));
             case CustomerLoginResults.NotActive:
                 return ApiError(StatusCodes.Status403Forbidden, "not_active", await _localizationService.GetResourceAsync("Account.Login.WrongCredentials.NotActive"));
             default:
-                await _customerActivityService.InsertActivityAsync(RestApiDefaults.ActivityLogSignInFailed, $"REST API: failed sign-in for '{login}' ({result})");
+                //logged on the targeted account when it exists, so that the store owner sees attacks on it
+                var target = (_customerSettings.UsernamesEnabled
+                    ? await _customerService.GetCustomerByUsernameAsync(login)
+                    : await _customerService.GetCustomerByEmailAsync(login)) ?? await _workContext.GetCurrentCustomerAsync();
+                await _customerActivityService.InsertActivityAsync(target, RestApiDefaults.ActivityLogSignInFailed, $"REST API: failed sign-in for '{login}' ({result}) from {_webHelper.GetCurrentIpAddress()}");
                 return ApiError(StatusCodes.Status401Unauthorized, "invalid_credentials", await _localizationService.GetResourceAsync("Account.Login.WrongCredentials"));
         }
 
@@ -179,15 +229,52 @@ public class AuthController : BaseApiController
         if (!await _permissionService.AuthorizeAsync(RestApiPermissionConfigManager.USE_STOREFRONT_API, customer))
             return ApiError(StatusCodes.Status403Forbidden, "forbidden", "This account is not allowed to use the API.");
 
-        await TakeOverGuestSessionAsync(customer);
+        return ApiOk(await CompleteSignInAsync(customer));
+    }
 
-        //same bookkeeping as a web sign-in
-        customer.RequireReLogin = false;
-        await _customerService.UpdateCustomerAsync(customer);
-        await _eventPublisher.PublishAsync(new CustomerLoggedinEvent(customer));
-        await _customerActivityService.InsertActivityAsync(customer, "PublicStore.Login", await _localizationService.GetResourceAsync("ActivityLog.PublicStore.Login"), customer);
+    /// <summary>
+    /// Second step of a sign-in for accounts with a second factor: pending token from auth/login + code
+    /// </summary>
+    [HttpPost("mfa")]
+    public virtual async Task<IActionResult> Mfa([FromBody] MfaRequest request)
+    {
+        if (!_settings.StorefrontEnabled)
+            return StorefrontDisabled();
 
-        return ApiOk(await IssueStorefrontTokenAsync(customer));
+        if (string.IsNullOrWhiteSpace(request?.MfaToken) || string.IsNullOrWhiteSpace(request.Code))
+            return ApiBadRequest("The pending token and the code are required.");
+
+        var pending = await _apiTokenService.GetValidTokenAsync(request.MfaToken.Trim());
+        var store = await _storeContext.GetCurrentStoreAsync();
+        var customer = pending is { Kind: ApiTokenKind.MfaPending } && pending.StoreId == store.Id
+            ? await _customerService.GetCustomerByIdAsync(pending.CustomerId)
+            : null;
+        if (customer == null || customer.Deleted || !customer.Active)
+            return ApiError(StatusCodes.Status401Unauthorized, "invalid_mfa_token", "The pending token is invalid or expired. Sign in again.");
+
+        var provider = await _mfaService.GetActiveProviderAsync(customer);
+        var (valid, attemptsLeft) = _mfaService.Verify(pending.Id, customer, provider, request.Code);
+        if (!valid)
+        {
+            await _customerActivityService.InsertActivityAsync(customer, RestApiDefaults.ActivityLogSignInFailed,
+                $"REST API: wrong second-factor code ({attemptsLeft} attempt(s) left)");
+            if (attemptsLeft == 0)
+            {
+                await _apiTokenService.RevokeTokenAsync(pending);
+                return ApiError(StatusCodes.Status401Unauthorized, "invalid_mfa_token", "Too many wrong codes. Sign in again.");
+            }
+
+            return ApiError(StatusCodes.Status401Unauthorized, "invalid_code", $"Wrong code. {attemptsLeft} attempt(s) left.");
+        }
+
+        await _apiTokenService.RevokeTokenAsync(pending);
+
+        //the password step skipped the login bookkeeping because the second factor was awaited
+        customer.FailedLoginAttempts = 0;
+        customer.CannotLoginUntilDateUtc = null;
+        customer.LastLoginDateUtc = DateTime.UtcNow;
+
+        return ApiOk(await CompleteSignInAsync(customer));
     }
 
     /// <summary>
@@ -269,8 +356,17 @@ public class AuthController : BaseApiController
         var customer = client == null ? null : await _customerService.GetCustomerByIdAsync(client.CustomerId);
         if (client == null || customer == null || customer.Deleted || !customer.Active)
         {
-            await _customerActivityService.InsertActivityAsync(RestApiDefaults.ActivityLogSignInFailed, $"REST API: failed client authentication for '{request?.ClientId}'");
+            var target = customer ?? await _workContext.GetCurrentCustomerAsync();
+            await _customerActivityService.InsertActivityAsync(target, RestApiDefaults.ActivityLogSignInFailed, $"REST API: failed client authentication for '{request?.ClientId}' from {_webHelper.GetCurrentIpAddress()}");
             return ApiError(StatusCodes.Status401Unauthorized, "invalid_client", "Invalid client credentials.");
+        }
+
+        var ip = _webHelper.GetCurrentIpAddress();
+        if (!ApiTokenService.IsIpAllowed(client, ip))
+        {
+            await _customerActivityService.InsertActivityAsync(customer, RestApiDefaults.ActivityLogRequestRefused,
+                $"REST API: client '{client.Name}' refused from IP address {ip} (not in its allowed addresses)");
+            return ApiError(StatusCodes.Status403Forbidden, "ip_not_allowed", "This API client may not connect from this IP address.");
         }
 
         if (!await _permissionService.AuthorizeAsync(RestApiPermissionConfigManager.USE_BACKOFFICE_API, customer))

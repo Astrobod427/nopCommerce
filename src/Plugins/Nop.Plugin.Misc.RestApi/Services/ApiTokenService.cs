@@ -1,3 +1,4 @@
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
@@ -52,6 +53,46 @@ public class ApiTokenService
     public static string Hash(string value)
     {
         return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value ?? string.Empty)));
+    }
+
+    /// <summary>
+    /// Parses a list of IP addresses and ranges (CIDR), one per line or comma separated
+    /// </summary>
+    /// <returns>Parsed ranges (a single address is a /32 or /128 range) and the entries that could not be parsed</returns>
+    public static (IList<IPNetwork> ranges, IList<string> invalid) ParseIpList(string value)
+    {
+        var ranges = new List<IPNetwork>();
+        var invalid = new List<string>();
+        foreach (var entry in (value ?? string.Empty).Split(['\n', '\r', ',', ';', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (IPNetwork.TryParse(entry, out var range))
+                ranges.Add(range);
+            else if (IPAddress.TryParse(entry, out var address))
+                ranges.Add(new IPNetwork(address, address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 32 : 128));
+            else
+                invalid.Add(entry);
+        }
+
+        return (ranges, invalid);
+    }
+
+    /// <summary>
+    /// Checks whether an API client may connect from an IP address
+    /// </summary>
+    /// <param name="client">API client</param>
+    /// <param name="ipAddress">Client IP address</param>
+    public static bool IsIpAllowed(ApiClient client, string ipAddress)
+    {
+        if (string.IsNullOrWhiteSpace(client?.AllowedIpAddresses))
+            return true;
+
+        if (!IPAddress.TryParse(ipAddress, out var address))
+            return false;
+
+        if (address.IsIPv4MappedToIPv6)
+            address = address.MapToIPv4();
+
+        return ParseIpList(client.AllowedIpAddresses).ranges.Any(range => range.Contains(address));
     }
 
     #endregion
@@ -234,7 +275,7 @@ public class ApiTokenService
     /// Creates an API client
     /// </summary>
     /// <returns>Created client and its clear secret (shown once)</returns>
-    public virtual async Task<(ApiClient client, string secret)> CreateClientAsync(string name, int customerId, bool active)
+    public virtual async Task<(ApiClient client, string secret)> CreateClientAsync(string name, int customerId, bool active, string allowedIpAddresses = null)
     {
         var secret = GenerateRandomString();
         var client = new ApiClient
@@ -244,6 +285,7 @@ public class ApiTokenService
             SecretHash = Hash(secret),
             CustomerId = customerId,
             Active = active,
+            AllowedIpAddresses = allowedIpAddresses,
             CreatedOnUtc = DateTime.UtcNow
         };
         await _apiClientRepository.InsertAsync(client);

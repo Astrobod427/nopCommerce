@@ -18,6 +18,7 @@ public class ApiClientBuilder : NopEntityBuilder<ApiClient>
             .WithColumn(nameof(ApiClient.Name)).AsString(200).NotNullable()
             .WithColumn(nameof(ApiClient.ClientId)).AsString(64).NotNullable().Unique()
             .WithColumn(nameof(ApiClient.SecretHash)).AsString(64).NotNullable()
-            .WithColumn(nameof(ApiClient.CustomerId)).AsInt32().ForeignKey<Customer>();
+            .WithColumn(nameof(ApiClient.CustomerId)).AsInt32().ForeignKey<Customer>()
+            .WithColumn(nameof(ApiClient.AllowedIpAddresses)).AsString(1000).Nullable();
     }
 }

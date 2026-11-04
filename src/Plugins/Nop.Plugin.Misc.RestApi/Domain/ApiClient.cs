@@ -42,4 +42,9 @@ public class ApiClient : BaseEntity
     /// Gets or sets the date and time of the last successful authentication
     /// </summary>
     public DateTime? LastUsedOnUtc { get; set; }
+
+    /// <summary>
+    /// Gets or sets the IP addresses or ranges (CIDR) the client may connect from, one per line; empty = any
+    /// </summary>
+    public string AllowedIpAddresses { get; set; }
 }

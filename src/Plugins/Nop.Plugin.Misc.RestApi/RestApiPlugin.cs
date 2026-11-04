@@ -1,4 +1,6 @@
+using Nop.Core.Domain.Logging;
 using Nop.Core.Domain.ScheduleTasks;
+using Nop.Data;
 using Nop.Plugin.Misc.RestApi.Services;
 using Nop.Services.Common;
 using Nop.Services.Configuration;
@@ -17,6 +19,7 @@ public class RestApiPlugin : BasePlugin, IMiscPlugin
 {
     #region Fields
 
+    protected readonly IRepository<ActivityLogType> _activityLogTypeRepository;
     protected readonly ILanguageService _languageService;
     protected readonly ILocalizationService _localizationService;
     protected readonly INopUrlHelper _nopUrlHelper;
@@ -28,19 +31,55 @@ public class RestApiPlugin : BasePlugin, IMiscPlugin
 
     #region Ctor
 
-    public RestApiPlugin(ILanguageService languageService,
+    public RestApiPlugin(IRepository<ActivityLogType> activityLogTypeRepository,
+        ILanguageService languageService,
         ILocalizationService localizationService,
         INopUrlHelper nopUrlHelper,
         IPermissionService permissionService,
         IScheduleTaskService scheduleTaskService,
         ISettingService settingService)
     {
+        _activityLogTypeRepository = activityLogTypeRepository;
         _languageService = languageService;
         _localizationService = localizationService;
         _nopUrlHelper = nopUrlHelper;
         _permissionService = permissionService;
         _scheduleTaskService = scheduleTaskService;
         _settingService = settingService;
+    }
+
+    #endregion
+
+    #region Utilities
+
+    /// <summary>
+    /// Creates the activity log types of the plugin (sign-in failures, back-office writes, refused requests)
+    /// </summary>
+    protected virtual async Task InstallActivityLogTypesAsync()
+    {
+        var types = new Dictionary<string, string>
+        {
+            [RestApiDefaults.ActivityLogSignInFailed] = "REST API: failed sign-in",
+            [RestApiDefaults.ActivityLogBackOfficeWrite] = "REST API: back-office change",
+            [RestApiDefaults.ActivityLogRequestRefused] = "REST API: refused request"
+        };
+
+        var existing = _activityLogTypeRepository.Table.Select(type => type.SystemKeyword).ToList();
+        foreach (var (keyword, name) in types.Where(type => !existing.Contains(type.Key)))
+            await _activityLogTypeRepository.InsertAsync(new ActivityLogType { SystemKeyword = keyword, Name = name, Enabled = true });
+    }
+
+    /// <summary>
+    /// Adds the plugin texts (English, and French for every French language)
+    /// </summary>
+    protected virtual async Task InstallLocalesAsync()
+    {
+        await _localizationService.AddOrUpdateLocaleResourceAsync(RestApiLocales.English);
+        foreach (var language in await _languageService.GetAllLanguagesAsync(showHidden: true))
+        {
+            if (language.LanguageCulture?.StartsWith("fr", StringComparison.OrdinalIgnoreCase) == true)
+                await _localizationService.AddOrUpdateLocaleResourceAsync(RestApiLocales.French, language.Id);
+        }
     }
 
     #endregion
@@ -68,6 +107,9 @@ public class RestApiPlugin : BasePlugin, IMiscPlugin
             StorefrontTokenLifetimeDays = 30,
             BackOfficeTokenLifetimeMinutes = 60,
             MaxPageSize = 100,
+            RequestsPerMinute = 300,
+            AuthRequestsPerMinute = 10,
+            CorsAllowedOrigins = string.Empty,
             AppPrimaryColor = "#4AB2F1",
             AppSecondaryColor = "#3B464F",
             AppLogoPictureId = 0
@@ -85,14 +127,24 @@ public class RestApiPlugin : BasePlugin, IMiscPlugin
             });
         }
 
-        await _localizationService.AddOrUpdateLocaleResourceAsync(RestApiLocales.English);
-        foreach (var language in await _languageService.GetAllLanguagesAsync(showHidden: true))
-        {
-            if (language.LanguageCulture?.StartsWith("fr", StringComparison.OrdinalIgnoreCase) == true)
-                await _localizationService.AddOrUpdateLocaleResourceAsync(RestApiLocales.French, language.Id);
-        }
+        await InstallLocalesAsync();
+        await InstallActivityLogTypesAsync();
 
         await base.InstallAsync();
+    }
+
+    /// <summary>
+    /// Update plugin (new texts and activity log types; schema and settings are in the update migrations)
+    /// </summary>
+    public override async Task UpdateAsync(string currentVersion, string targetVersion)
+    {
+        await InstallLocalesAsync();
+        await InstallActivityLogTypesAsync();
+
+        //the update migrations wrote new settings directly in the database, after the settings were cached
+        await _settingService.ClearCacheAsync();
+
+        await base.UpdateAsync(currentVersion, targetVersion);
     }
 
     /// <summary>
@@ -114,6 +166,9 @@ public class RestApiPlugin : BasePlugin, IMiscPlugin
         };
         foreach (var record in (await _permissionService.GetAllPermissionRecordsAsync()).Where(record => permissionNames.Contains(record.SystemName)))
             await _permissionService.DeletePermissionRecordAsync(record);
+
+        var keywords = new[] { RestApiDefaults.ActivityLogSignInFailed, RestApiDefaults.ActivityLogBackOfficeWrite, RestApiDefaults.ActivityLogRequestRefused };
+        await _activityLogTypeRepository.DeleteAsync(type => keywords.Contains(type.SystemKeyword));
 
         await _localizationService.DeleteLocaleResourcesAsync("Plugins.Misc.RestApi");
         foreach (var name in permissionNames)

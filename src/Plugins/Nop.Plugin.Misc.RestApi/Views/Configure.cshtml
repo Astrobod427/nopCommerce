@@ -55,6 +55,26 @@
                     </div>
                 </div>
                 <div class="card card-default">
+                    <div class="card-header">@T("Plugins.Misc.RestApi.Settings.Protection")</div>
+                    <div class="card-body">
+                        <div class="form-group row">
+                            <div class="col-md-3"><nop-label asp-for="RequestsPerMinute" /></div>
+                            <div class="col-md-9"><nop-editor asp-for="RequestsPerMinute" /></div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3"><nop-label asp-for="AuthRequestsPerMinute" /></div>
+                            <div class="col-md-9"><nop-editor asp-for="AuthRequestsPerMinute" /></div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3"><nop-label asp-for="CorsAllowedOrigins" /></div>
+                            <div class="col-md-9">
+                                <nop-textarea asp-for="CorsAllowedOrigins" />
+                                <span asp-validation-for="CorsAllowedOrigins"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-default">
                     <div class="card-header">@T("Plugins.Misc.RestApi.Settings.MobileApp")</div>
                     <div class="card-body">
                         <div class="form-group row">

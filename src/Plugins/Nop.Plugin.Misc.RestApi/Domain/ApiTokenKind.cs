@@ -13,5 +13,10 @@ public enum ApiTokenKind
     /// <summary>
     /// Back-office token: an API client acting for its customer account
     /// </summary>
-    BackOffice = 20
+    BackOffice = 20,
+
+    /// <summary>
+    /// Pending storefront session: the password was right, the second factor is awaited. Grants no access.
+    /// </summary>
+    MfaPending = 30
 }

@@ -2,7 +2,7 @@
   "Group": "Misc",
   "FriendlyName": "REST API (storefront & back office)",
   "SystemName": "Misc.RestApi",
-  "Version": "5.00.1",
+  "Version": "5.00.2",
   "SupportedVersions": [ "5.00" ],
   "Author": "Astrobod427",
   "DisplayOrder": 1,

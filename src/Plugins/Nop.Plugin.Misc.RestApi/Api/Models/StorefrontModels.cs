@@ -10,6 +10,22 @@ public record RegisterRequest(string Email, string Password, string FirstName, s
 
 public record ClientTokenRequest(string ClientId, string ClientSecret);
 
+public record MfaRequest(string MfaToken, string Code);
+
+/// <summary>
+/// Answer of a sign-in when the account uses a second factor: send the code with the pending token to auth/mfa
+/// </summary>
+public record MfaChallengeResponse
+{
+    public bool MfaRequired { get; init; } = true;
+
+    public string MfaToken { get; init; }
+
+    public string Provider { get; init; }
+
+    public DateTime ExpiresAt { get; init; }
+}
+
 public record TokenResponse
 {
     public string AccessToken { get; init; }
