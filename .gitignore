@@ -206,4 +206,4 @@ src/Presentation/Nop.Web/wwwroot/lib_npm/cldr-data/main/*
 src/Presentation/Nop.Web/wwwroot/sitemaps/*
 !src/Presentation/Nop.Web/wwwroot/sitemaps/Index.htm
 src/packages/*
-src/Tests/Nop.Tests/Connections.resx
+src/Tests/Nop.Tests/Connections.resxspecs/002-restapi-plugin/.staging-admin-password

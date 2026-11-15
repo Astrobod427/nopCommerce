@@ -1,7 +1,8 @@
+import os
 """Staging helpers: admin session on the local nopCommerce staging (127.0.0.1:5010)."""
 import pathlib, re, requests
 
-BASE = "http://127.0.0.1:5010"
+BASE = os.environ.get("NOP_BASE", "http://127.0.0.1:5010")
 EMAIL = "staging-admin@local.test"
 PASSWORD = (pathlib.Path(__file__).parent.parent / ".staging-admin-password").read_text().strip()
 
