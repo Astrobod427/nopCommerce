@@ -1,6 +1,6 @@
 # Spec 001 — Passage de la prod à nopCommerce 5.00 / .NET 10
 
-**Statut** : staging validé, en attente du feu vert de François · **Kanban** : `t_4965ae3a` (board `webshops`)
+**Statut** : en prod (5.00 le 2026-10-27, correctif 5.00.1 le 2026-11-15, test RestApi 38/38 sur staging) · **Kanban** : `t_4965ae3a` (board `webshops`)
 **Branche** : `upgrade/net10-2026-10`
 
 ## Contexte
